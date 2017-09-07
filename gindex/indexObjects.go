@@ -1,13 +1,13 @@
 package gindex
 
 import (
-	"github.com/G-Node/gin-dex/git"
+	"github.com/G-Node/gig"
 	"time"
 	"encoding/json"
 )
 
 type IndexBlob struct {
-	git.Blob
+	gig.Blob
 	Id           int64
 	GinRepoId    int64
 	CommitSha    string
@@ -17,8 +17,13 @@ type IndexBlob struct {
 	IndexingTime time.Time
 }
 
+func NewCommitFromGig(gCommit *gig.Commit) *IndexCommit {
+	commit := &IndexCommit{gCommit, 123, time.Now()}
+	return commit
+}
+
 type IndexCommit struct {
-	git.Commit
+	*gig.Commit
 	GinRepoId    int64
 	IndexingTime time.Time
 }
