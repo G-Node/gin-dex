@@ -1,30 +1,42 @@
 package gindex
 
 import (
-	"github.com/G-Node/gig"
-	"time"
 	"encoding/json"
+	"time"
+
+	"io/ioutil"
+
+	"log"
+
+	"github.com/G-Node/gig"
 )
 
 type IndexBlob struct {
-	gig.Blob
+	*gig.Blob
+	Repoid       string
 	Id           int64
 	GinRepoId    int64
 	CommitSha    string
 	Path         string
 	Oid          int64
-	Content      string
 	IndexingTime time.Time
+	Content      string
 }
 
-func NewCommitFromGig(gCommit *gig.Commit) *IndexCommit {
-	commit := &IndexCommit{gCommit, 123, time.Now()}
+func NewCommitFromGig(gCommit *gig.Commit, repoid string) *IndexCommit {
+	commit := &IndexCommit{gCommit, repoid, time.Now()}
 	return commit
+}
+
+func NewBlobFromGig(gBlob *gig.Blob, repoid string) *IndexBlob {
+	// Remember keeping the id
+	blob := IndexBlob{Blob: gBlob, Repoid: repoid}
+	return &blob
 }
 
 type IndexCommit struct {
 	*gig.Commit
-	GinRepoId    int64
+	GinRepoId    string
 	IndexingTime time.Time
 }
 
@@ -52,6 +64,27 @@ func (bl *IndexBlob) ToJson() ([]byte, error) {
 }
 
 func (bl *IndexBlob) AddToIndex(server *ElServer, index string) error {
+	f_type, err := DetermineFileType(bl)
+	if err != nil {
+		log.Printf("Could not determine file type:%+v", err)
+		return nil
+	}
+	switch f_type {
+	case TEXT:
+		log.Printf("Text File found")
+		ct, err := ioutil.ReadAll(bl)
+		if err != nil {
+			return err
+		}
+		bl.Content = string(ct)
+		return nil
+	case ODML_XML:
+		ct, err := ioutil.ReadAll(bl)
+		if err != nil {
+			return err
+		}
+		bl.Content = string(ct)
+	}
 	data, err := bl.ToJson()
 	if err != nil {
 		return err
