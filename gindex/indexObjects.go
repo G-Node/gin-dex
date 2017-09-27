@@ -2,13 +2,11 @@ package gindex
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"time"
 
-	"io/ioutil"
-
-	"log"
-
 	"github.com/G-Node/gig"
+	log "github.com/Sirupsen/logrus"
 )
 
 type IndexBlob struct {
@@ -50,12 +48,12 @@ func (c *IndexCommit) ToJson() ([]byte, error) {
 	return json.Marshal(c)
 }
 
-func (c *IndexCommit) AddToIndex(server *ElServer, index string) error {
+func (c *IndexCommit) AddToIndex(server *ElServer, index string, id gig.SHA1) error {
 	data, err := c.ToJson()
 	if err != nil {
 		return err
 	}
-	err = AddToIndex(data, server, index, "commit")
+	err = AddToIndex(data, server, index, "commit", id)
 	return err
 }
 
@@ -63,7 +61,7 @@ func (bl *IndexBlob) ToJson() ([]byte, error) {
 	return json.Marshal(bl)
 }
 
-func (bl *IndexBlob) AddToIndex(server *ElServer, index string) error {
+func (bl *IndexBlob) AddToIndex(server *ElServer, index string, id gig.SHA1) error {
 	f_type, err := DetermineFileType(bl)
 	if err != nil {
 		log.Printf("Could not determine file type:%+v", err)
@@ -89,7 +87,7 @@ func (bl *IndexBlob) AddToIndex(server *ElServer, index string) error {
 	if err != nil {
 		return err
 	}
-	err = AddToIndex(data, server, index, "blob")
+	err = AddToIndex(data, server, index, "blob", id)
 	return err
 }
 
@@ -97,7 +95,10 @@ func (bl *IndexBlob) IsInIndex() (bool, error) {
 	return false, nil
 }
 
-func AddToIndex(data []byte, server *ElServer, index, doctype string) error {
-	_, err := server.Index(index, doctype, data)
+func AddToIndex(data []byte, server *ElServer, index, doctype string, id gig.SHA1) error {
+	resp, err := server.Index(index, doctype, data, id)
+	log.Debugf("Tried to add, got: %+v", resp)
+	bd, err := ioutil.ReadAll(resp.Body)
+	log.Debugf("Response body was :%s", bd)
 	return err
 }

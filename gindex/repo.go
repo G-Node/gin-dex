@@ -24,8 +24,8 @@ func IndexRepoWithPath(path string, serv *ElServer, repoid string) error {
 	if err != nil {
 		return err
 	}
-	for _, commit := range commits {
-		err := NewCommitFromGig(commit, repoid).AddToIndex(serv, "commits")
+	for id, commit := range commits {
+		err := NewCommitFromGig(commit, repoid).AddToIndex(serv, "commits", id)
 		blobs := make(map[gig.SHA1]*gig.Blob)
 		rep.GetBlobsForCommit(commit, blobs)
 		for blid, blob := range blobs {
@@ -34,11 +34,11 @@ func IndexRepoWithPath(path string, serv *ElServer, repoid string) error {
 				return err
 			}
 			if !hasBlob {
-				NewBlobFromGig(blob, repoid).AddToIndex(serv, "blobs")
+				NewBlobFromGig(blob, repoid).AddToIndex(serv, "blobs", id)
 			}
 		}
 		if err != nil {
-			log.Printf("Big problem2")
+			log.Printf("Big problem2:%+v", err)
 		}
 	}
 	return nil
