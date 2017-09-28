@@ -30,11 +30,13 @@ func IndexRepoWithPath(path string, serv *ElServer, repoid string) error {
 		rep.GetBlobsForCommit(commit, blobs)
 		for blid, blob := range blobs {
 			hasBlob, err := serv.HasBlob("blobs", blid)
+			log.Debugf("Blob already there %s", hasBlob)
 			if err != nil {
 				return err
 			}
 			if !hasBlob {
-				NewBlobFromGig(blob, repoid).AddToIndex(serv, "blobs", id)
+				err := NewBlobFromGig(blob, repoid).AddToIndex(serv, "blobs", blid)
+				log.Debugf("%+v", err)
 			}
 		}
 		if err != nil {
