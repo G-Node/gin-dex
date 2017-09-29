@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"time"
 
+	"crypto/sha1"
+
 	"github.com/G-Node/gig"
 	log "github.com/Sirupsen/logrus"
 )
@@ -53,7 +55,8 @@ func (c *IndexCommit) AddToIndex(server *ElServer, index string, id gig.SHA1) er
 	if err != nil {
 		return err
 	}
-	err = AddToIndex(data, server, index, "commit", id)
+	indexid := sha1.Sum([]byte(c.GinRepoId + id.String()))
+	err = AddToIndex(data, server, index, "commit", indexid)
 	return err
 }
 
@@ -64,18 +67,18 @@ func (bl *IndexBlob) ToJson() ([]byte, error) {
 func (bl *IndexBlob) AddToIndex(server *ElServer, index string, id gig.SHA1) error {
 	f_type, err := DetermineFileType(bl)
 	if err != nil {
-		log.Printf("Could not determine file type:%+v", err)
+		log.Errorf("Could not determine file type: %+v", err)
 		return nil
 	}
 	switch f_type {
 	case TEXT:
-		log.Printf("Text File found")
+		log.Debugf("Text file found detected")
 		ct, err := ioutil.ReadAll(bl)
 		if err != nil {
+			log.Errorf("Could not read text file content:%+v", err)
 			return err
 		}
 		bl.Content = string(ct)
-		return nil
 	case ODML_XML:
 		ct, err := ioutil.ReadAll(bl)
 		if err != nil {
@@ -97,8 +100,7 @@ func (bl *IndexBlob) IsInIndex() (bool, error) {
 
 func AddToIndex(data []byte, server *ElServer, index, doctype string, id gig.SHA1) error {
 	resp, err := server.Index(index, doctype, data, id)
-	log.Debugf("Tried to add, got: %+v", resp)
 	bd, err := ioutil.ReadAll(resp.Body)
-	log.Debugf("Response body was :%s", bd)
+	log.Debugf("Tried adding to the index: %+v, %s", resp, bd)
 	return err
 }
