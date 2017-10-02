@@ -66,3 +66,33 @@ func (el *ElServer) Has(adr string) (bool, error) {
 	}
 	return res.Found, nil
 }
+
+func (el *ElServer) Search(querry, index, okRepos string) (*http.Response, error) {
+	querryBase :=
+		`{
+		  "query": {
+			"bool": {
+			  "must": {
+				"match": {
+				  "_all": "%s"
+				}
+			  },
+			  "filter": {
+				"terms": {
+				  "GinRepoId" : ["testid", "hjh"]
+				}
+			  }
+			}
+		  }
+		}`
+	//implement the passing of the repo ids
+	formatted_querry := fmt.Sprintf(querryBase, querry, okRepos)
+	adrr := fmt.Sprintf("%s/%s/_search", el.adress, index)
+	log.Debugf("Formatted querry is:%s", formatted_querry)
+	req, err := http.NewRequest("POST", adrr, bytes.NewReader([]byte(formatted_querry)))
+	if err != nil {
+		log.Errorf("Could not form search querry:%+v", err)
+		return nil, err
+	}
+	return el.elasticRequest(req)
+}
