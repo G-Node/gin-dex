@@ -20,7 +20,6 @@ type ElServer struct {
 }
 
 func (el *ElServer) Index(index, doctype string, data []byte, id gig.SHA1) (*http.Response, error) {
-	log.Debugf("Data is :%s", string(data))
 	adrr := fmt.Sprintf("%s/%s/%s/%s", el.adress, index, doctype, id.String())
 	req, err := http.NewRequest("POST", adrr, bytes.NewReader(data))
 	if err != nil {
@@ -30,13 +29,12 @@ func (el *ElServer) Index(index, doctype string, data []byte, id gig.SHA1) (*htt
 }
 
 func (el *ElServer) elasticRequest(req *http.Request) (*http.Response, error) {
-
 	if el.uname != nil {
 		req.SetBasicAuth(*el.uname, *el.password)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	cl := http.Client{}
-	log.Debugf("Going to request:%+v", req)
+	log.Debugf("Indexing request:%+v", req)
 	return cl.Do(req)
 }
 
@@ -60,7 +58,11 @@ func (el *ElServer) Has(adr string) (bool, error) {
 		return false, err
 	}
 	bdy, err := ioutil.ReadAll(resp.Body)
-	var res struct{ found bool }
-	json.Unmarshal(bdy, &res)
-	return res.found, nil
+	var res struct{ Found bool }
+	err = json.Unmarshal(bdy, &res)
+	if err != nil {
+		log.WithError(err)
+		return false, err
+	}
+	return res.Found, nil
 }
