@@ -67,7 +67,7 @@ func (el *ElServer) Has(adr string) (bool, error) {
 	return res.Found, nil
 }
 
-func (el *ElServer) Search(querry, index, okRepos string) (*http.Response, error) {
+func (el *ElServer) Search(querry, index string, okRepos []string) (*http.Response, error) {
 	querryBase :=
 		`{
 		  "query": {
@@ -79,19 +79,24 @@ func (el *ElServer) Search(querry, index, okRepos string) (*http.Response, error
 			  },
 			  "filter": {
 				"terms": {
-				  "GinRepoId" : ["testid", "hjh"]
+				  "GinRepoId" : %s
 				}
 			  }
 			}
 		  }
 		}`
 	//implement the passing of the repo ids
-	formatted_querry := fmt.Sprintf(querryBase, querry, okRepos)
+	repos, err := json.Marshal(okRepos)
+	if err != nil {
+		log.Errorf("Could not marshcal okRepos: %+v", err)
+		return nil, err
+	}
+	formatted_querry := fmt.Sprintf(querryBase, querry, string(repos))
 	adrr := fmt.Sprintf("%s/%s/_search", el.adress, index)
-	log.Debugf("Formatted querry is:%s", formatted_querry)
+	log.Debugf("Formatted query is:%s", formatted_querry)
 	req, err := http.NewRequest("POST", adrr, bytes.NewReader([]byte(formatted_querry)))
 	if err != nil {
-		log.Errorf("Could not form search querry:%+v", err)
+		log.Errorf("Could not form search query:%+v", err)
 		return nil, err
 	}
 	return el.elasticRequest(req)
