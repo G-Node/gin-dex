@@ -9,6 +9,7 @@ import (
 
 	"github.com/G-Node/gig"
 	log "github.com/Sirupsen/logrus"
+	"github.com/G-Node/go-annex"
 )
 
 type IndexBlob struct {
@@ -64,7 +65,7 @@ func (bl *IndexBlob) ToJson() ([]byte, error) {
 	return json.Marshal(bl)
 }
 
-func (bl *IndexBlob) AddToIndex(server *ElServer, index string, id gig.SHA1) error {
+func (bl *IndexBlob) AddToIndex(server *ElServer, index, repopath string, id gig.SHA1) error {
 
 	f_type, err := BlobFileType(bl)
 	if err != nil {
@@ -72,6 +73,25 @@ func (bl *IndexBlob) AddToIndex(server *ElServer, index string, id gig.SHA1) err
 		return nil
 	}
 	switch f_type {
+	case ANNEX:
+		APFileC, err := ioutil.ReadAll(bl.Blob)
+		if err != nil {
+			log.Errorf("Could not open annex pointer file: %+v", err)
+			return err
+		}
+		Afile, err := gannex.NewAFile(repopath, "", "", APFileC)
+		if err != nil {
+			log.Errorf("Could not get annex file%+v", err)
+			return err
+		}
+		fp, err := Afile.Open()
+		if err != nil {
+			log.Errorf("Could not open annex file: %+v", err)
+			return err
+		}
+		bl.Blob = gig.MakeAnnexBlob(fp, Afile.Info.Size())
+		return bl.AddToIndex(server, index, repopath, id)
+
 	case TEXT:
 		log.Debugf("Text file detected")
 		ct, err := ioutil.ReadAll(bl)

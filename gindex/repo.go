@@ -37,7 +37,7 @@ func IndexRepoWithPath(path, ref string, serv *ElServer, repoid string) error {
 				return err
 			}
 			if !hasBlob {
-				err := NewBlobFromGig(blob, repoid).AddToIndex(serv, "blobs", blid)
+				err := NewBlobFromGig(blob, repoid).AddToIndex(serv, "blobs", path, blid)
 				if err != nil {
 					log.Debugf("Indexing blob failed: %+v", err)
 				}
