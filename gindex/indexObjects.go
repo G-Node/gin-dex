@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"time"
-
 	"crypto/sha1"
 
 	"github.com/G-Node/gig"
@@ -67,14 +66,15 @@ func (bl *IndexBlob) ToJson() ([]byte, error) {
 
 func (bl *IndexBlob) AddToIndex(server *ElServer, index, repopath string, id gig.SHA1) error {
 
-	f_type, err := BlobFileType(bl)
+	f_type, blobBuffer, err := BlobFileType(bl)
 	if err != nil {
 		log.Errorf("Could not determine file type: %+v", err)
 		return nil
 	}
 	switch f_type {
 	case ANNEX:
-		APFileC, err := ioutil.ReadAll(bl.Blob)
+		APFileC, err := ioutil.ReadAll(blobBuffer)
+		log.Debugf("Annex file:%s", APFileC)
 		if err != nil {
 			log.Errorf("Could not open annex pointer file: %+v", err)
 			return err
@@ -93,15 +93,14 @@ func (bl *IndexBlob) AddToIndex(server *ElServer, index, repopath string, id gig
 		return bl.AddToIndex(server, index, repopath, id)
 
 	case TEXT:
-		log.Debugf("Text file detected")
-		ct, err := ioutil.ReadAll(bl)
+		ct, err := ioutil.ReadAll(blobBuffer)
 		if err != nil {
 			log.Errorf("Could not read text file content:%+v", err)
 			return err
 		}
 		bl.Content = string(ct)
 	case ODML_XML:
-		ct, err := ioutil.ReadAll(bl)
+		ct, err := ioutil.ReadAll(blobBuffer)
 		if err != nil {
 			return err
 		}

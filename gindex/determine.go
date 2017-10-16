@@ -2,11 +2,12 @@ package gindex
 
 import (
 	"bufio"
-	"io/ioutil"
+
 	"net/http"
 	"strings"
 
 	"github.com/G-Node/gogs/pkg/tool"
+	"github.com/Sirupsen/logrus"
 )
 
 const (
@@ -17,7 +18,9 @@ const (
 )
 
 func DetermineFileType(peekData []byte) (int64, error) {
+	logrus.Debugf("Peaked at: %s", string(peekData))
 	if tool.IsAnnexedFile(peekData){
+		logrus.Debugf("Found an annex file")
 		return ANNEX,nil
 	}
 	typeStr := http.DetectContentType(peekData)
@@ -25,26 +28,28 @@ func DetermineFileType(peekData []byte) (int64, error) {
 		if strings.Contains(string(peekData), "ODML") {
 			return ODML_XML, nil
 		}
+		logrus.Debugf("Found a text file")
 		return TEXT, nil
 	}
 	return UKKNOWN, nil
 
 }
-func BlobFileType(blob *IndexBlob) (int64, error) {
-	var peekData []byte
+func BlobFileType(blob *IndexBlob) (int64, *bufio.Reader, error) {
+	blobBuffer := bufio.NewReader(blob.Blob)
 	if blob.Size() > 1024 {
-		peekData, err := bufio.NewReader(blob).Peek(1024)
+		peekData, err := blobBuffer.Peek(1024)
 		if err != nil {
-			return UKKNOWN, err
+			return UKKNOWN,nil, err
 		}
-		peekData = peekData
+		fType, err := DetermineFileType(peekData)
+		return fType, blobBuffer, err
 	} else {
-		peekData, err := ioutil.ReadAll(blob)
+		peekData, err := blobBuffer.Peek(int(blob.Size())) // conversion should be fine(<1024)
 		if err != nil {
-			return UKKNOWN, err
+			return UKKNOWN, nil, err
 		}
-		peekData = peekData
+		fType, err := DetermineFileType(peekData)
+		return fType, blobBuffer, err
 	}
-	return DetermineFileType(peekData)
 
 }
