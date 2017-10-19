@@ -1,0 +1,7 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = true
+[annex]
+	uuid = b4545536-9621-4168-ac2c-e1a1ef144f41
+	version = 5
