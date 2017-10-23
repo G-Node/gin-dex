@@ -19,8 +19,13 @@ type ElServer struct {
 	password *string
 }
 
+func NewElServer(adress string, uname, password *string) *ElServer {
+	return &ElServer{adress: adress, uname: uname, password: password}
+}
+
 func (el *ElServer) Index(index, doctype string, data []byte, id gig.SHA1) (*http.Response, error) {
 	adrr := fmt.Sprintf("%s/%s/%s/%s", el.adress, index, doctype, id.String())
+	log.Debugf("Indexing this:%s", string(data))
 	req, err := http.NewRequest("POST", adrr, bytes.NewReader(data))
 	if err != nil {
 		return nil, err
