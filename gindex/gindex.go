@@ -9,6 +9,7 @@ type SearchRequest struct {
 
 type IndexRequest struct {
 	Token    string
+	CsrfT  string
 	UserID   int
 	RepoPath string
 	RepoID   string
