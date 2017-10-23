@@ -3,11 +3,12 @@ package gindex
 import (
 	"net/http"
 	"fmt"
-	"encoding/json"
-	"io/ioutil"
 	log "github.com/Sirupsen/logrus"
 	"github.com/gogits/go-gogs-client"
-	"io"
+
+	"encoding/json"
+	"github.com/G-Node/gig"
+	"bytes"
 )
 
 // Handler for Index requests
@@ -35,50 +36,67 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSer
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	// Get repo ids from the gin serevr to which the user has access
-	// wer need tyo limit results to those
-	repos := [] gogs.Repository{}
-	err = getParsedResponse(http.MethodGet, fmt.Sprintf("%s/api/v1/user/repos", gins.URL),
-		nil, rbd.Token, repos)
+	// Get repo ids from the gin server to which the user has access
+	// we need to limit results to those
+	repos := []gogs.Repository{}
+	err = getParsedHttpCall(http.MethodGet, fmt.Sprintf("%s/api/v1/user/repos", gins.URL),
+		nil, rbd.Token, rbd.CsrfT, &repos)
 	if err != nil {
+		log.Errorf("could not querry repos: %+v", err)
 		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
 	repids := make([]string, len(repos))
 	for c, repo := range repos {
-		repids[c] = string(repo.ID)
+		repids[c] = fmt.Sprintf("%d", repo.ID)
+	}
+	log.Debugf("Repod to search in:%+v", repids)
+	// Lets search now
+	rBlobs := [] BlobSResult{}
+	err = searchNamedIndex(rbd.Querry, "blobs", repids, els, &rBlobs)
+	if err != nil {
+		log.Warnf("could not search blobs:%+v", err)
+	}
+	rCommits := [] CommitSResult{}
+	err = searchNamedIndex(rbd.Querry, "commits", repids, els, &rCommits)
+	if err != nil {
+		log.Warnf("could not search commits:%+v", err)
+	}
+	data, err := json.Marshal(SearchResults{Blobs: rBlobs, Commits: rCommits})
+	if err != nil {
+		log.Debugf("Could not Masrschal search results")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	w.WriteHeader(http.StatusOK)
-
+	w.Write(data)
 }
 
-func getParsedBody(r *http.Request, obj interface{}) error {
-	data, err := ioutil.ReadAll(r.Body)
+func searchNamedIndex(querry, index string, okRepids []string, els *ElServer,
+	result interface{}) error {
+	blobS, err := els.Search(querry, index, okRepids)
 	if err != nil {
-		log.Debugf("Could not read request body: %+v", err)
 		return err
 	}
-	err = json.Unmarshal(data, obj)
+	err = parseElResult(blobS, &result)
 	if err != nil {
-		log.Debugf("Could not unmarshal request: %+v, %s", err, string(data))
 		return err
 	}
 	return nil
 }
 
-func getParsedResponse(method, path string, body io.Reader, token string, obj interface{}) error {
-	client := &http.Client{}
-	req, _ := http.NewRequest(method, path, body)
-	req.Header.Set("Cookie", fmt.Sprintf("i_like_gogits=%s", token))
-	resp, err := client.Do(req)
+func parseElResult(comS *http.Response, pRes interface{}) error {
+	var res interface{}
+	err := getParsedResponse(comS, &res)
 	if err != nil {
 		return err
 	}
-	if (resp.StatusCode != http.StatusOK) {
-		return fmt.Errorf("Not Authorized")
+	// extract the somewhat nested search rersult
+	if x, ok := res.(map[string](interface{})); ok {
+		if y, ok := x["hits"].(map[string](interface{})); ok {
+			err = map2struct(y["hits"], &pRes)
+			return err
+		}
 	}
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	return json.Unmarshal(data, obj)
+	return fmt.Errorf("could not extract elastic result")
 }
