@@ -11,32 +11,35 @@ import (
 func main() {
 	usage := `gin-dex.
 Usage:
-  gin-dex [--eladress=<eladress> --eluser=<eluser> --elpw=<elpw> --rpath=<rpath> --port=<port> --debug]
+  gin-dex [--eladress=<eladress> --eluser=<eluser> --elpw=<elpw> --rpath=<rpath> --gin=<gin> --port=<port> --debug ]
 
 Options:
   --eladress=<eladress>           Adress of the elastic server [default: http://localhost:9200]
   --eluser=<eluser>               Elastic user [default: elastic]
   --elpw=<elpw>                   Elastic password [default: changeme]
   --port=<port>                   Server port [default: 8099]
+  --gin=<gin>                     Gin Server Adress [default: https://gin.g-node.org]
+  --rpath=<rpath>                 Path to the repositories [default: /repos]
   --debug                         Whether debug messages shall be printed
  `
-
 	args, err := docopt.Parse(usage, nil, true, "gin-dex0.1a", false)
 	if err != nil {
 		log.Printf("Error while parsing command line: %+v", err)
 		os.Exit(-1)
 	}
-
-	els := &gindex.ElServer{args["--eladress"].(string), &args["--eladress"].(string),
-		&args["--eladress"].(string)}
+	uname := args["--eluser"].(string)
+	pw := args["--elpw"].(string)
+	els := gindex.NewElServer(args["--eladress"].(string), &uname, &pw)
+	gin := &gindex.GinServer{URL: args["--gin"].(string)}
+	rpath := args["--rpath"].(string)
 
 	http.HandleFunc("/index", func(w http.ResponseWriter, r *http.Request) {
-		gindex.IndexH(w, r, els, &args["--bpath"].(string))
-	})
-	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
-		gindex.SearchH(w, r, els)
+		gindex.IndexH(w, r, els, &rpath)
 	})
 
+	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
+		gindex.SearchH(w, r, els, gin)
+	})
 	if args["--debug"].(bool) {
 		log.SetLevel(log.DebugLevel)
 		log.SetFormatter(&log.TextFormatter{ForceColors: true})
