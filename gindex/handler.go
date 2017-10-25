@@ -21,7 +21,7 @@ func IndexH(w http.ResponseWriter, r *http.Request, els *ElServer, rpath *string
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err = IndexRepoWithPath(fmt.Sprintf("%s%s", rpath, strings.ToLower(rbd.RepoPath)+". git"),
+	err = IndexRepoWithPath(fmt.Sprintf("%s/%s", *rpath, strings.ToLower(rbd.RepoPath)+".git"),
 		"master", els, rbd.RepoID)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -89,16 +89,16 @@ func ReindexH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSe
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	rec := httptest.NewRecorder()
+
 	for _, repo := range repos {
+		rec := httptest.NewRecorder()
 		ireq := IndexRequest{rbd.UserID, repo.FullName,
 			fmt.Sprintf("%d", repo.ID)}
 		data, _ := json.Marshal(ireq)
 		req, _ := http.NewRequest(http.MethodPost, "/index", bytes.NewReader(data))
 		IndexH(rec, req, els, rpath)
 		if rec.Code != http.StatusOK {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+			log.Debugf("Could not index %s,%d", repo.FullName, rec.Code)
 		}
 	}
 	w.WriteHeader(http.StatusOK)
