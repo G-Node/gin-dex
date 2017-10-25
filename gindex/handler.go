@@ -15,6 +15,7 @@ import (
 func IndexH(w http.ResponseWriter, r *http.Request, els *ElServer, rpath *string) {
 	rbd := IndexRequest{}
 	err := getParsedBody(r, &rbd)
+	log.Debugf("got a indexing request:%+v", rbd)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -32,6 +33,7 @@ func IndexH(w http.ResponseWriter, r *http.Request, els *ElServer, rpath *string
 func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinServer) {
 	rbd := SearchRequest{}
 	err := getParsedBody(r, &rbd)
+	log.Debugf("got a search request:%+v", rbd)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -75,6 +77,7 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSer
 func ReindexH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinServer, rpath *string) {
 	rbd := ReIndexRequest{}
 	getParsedBody(r, &rbd)
+	log.Debugf("got a reindex request:%+v", rbd)
 	repos, err := findRepos(*rpath, &rbd, gins)
 	if err != nil {
 		log.Debugf("failed listing repositories: %+v", err)
