@@ -89,7 +89,7 @@ func hasRepoAccess(repository *gig.Repository, rbd *ReIndexRequest, gins *GinSer
 		return nil, fmt.Errorf("not a repo path %s", repository.Path)
 	}
 	owner := splPath[len(splPath)-2]
-	name := splPath[len(splPath)-1]
+	name := strings.TrimSuffix(splPath[len(splPath)-1], ".git")
 	gRepo := gogs.Repository{}
 	err := getParsedHttpCall(http.MethodGet, fmt.Sprintf("%s/api/v1/repos/%s/%s",
 		gins.URL, owner, name), nil, rbd.Token, rbd.CsrfT, &gRepo)
