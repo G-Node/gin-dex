@@ -73,7 +73,7 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSer
 }
 
 func ReindexH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinServer, rpath *string) {
-	rbd := IndexRequest{}
+	rbd := ReIndexRequest{}
 	getParsedBody(r, &rbd)
 	repos, err := findRepos(*rpath, &rbd, gins)
 	if err != nil {
@@ -87,7 +87,7 @@ func ReindexH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSe
 	}
 	rec := httptest.NewRecorder()
 	for _, repo := range repos {
-		ireq := IndexRequest{rbd.Token, rbd.CsrfT, rbd.UserID, repo.FullName,
+		ireq := IndexRequest{rbd.UserID, repo.FullName,
 			fmt.Sprintf("%d", repo.ID)}
 		data, _ := json.Marshal(ireq)
 		req, _ := http.NewRequest(http.MethodPost, "/index", bytes.NewReader(data))

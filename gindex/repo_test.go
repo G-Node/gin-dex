@@ -10,7 +10,7 @@ import (
 )
 
 func TestRepoIndexing(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.ErrorLevel)
 	var requests []http.Request
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Did receive the following:%v", r)
@@ -34,7 +34,7 @@ func TestRepoIndexing(t *testing.T) {
 }
 
 func TestAnnexIndexing(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.ErrorLevel)
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Did receive the following:%v", r)
 		if (r.Method == http.MethodGet && strings.Contains(r.URL.Path, "commits")) {

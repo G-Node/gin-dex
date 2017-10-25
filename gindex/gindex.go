@@ -8,11 +8,15 @@ type SearchRequest struct {
 }
 
 type IndexRequest struct {
-	Token    string
-	CsrfT  string
 	UserID   int
 	RepoPath string
 	RepoID   string
+}
+
+type ReIndexRequest struct {
+	*IndexRequest
+	Token string
+	CsrfT string
 }
 type GinServer struct {
 	URL     string

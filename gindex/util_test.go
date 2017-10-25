@@ -35,7 +35,7 @@ func TestFindRepos(t *testing.T) {
 		return
 	}
 	log.Debugf("repos are:%+v", repos)
-	t.Logf("[OK] repo acces")
+	t.Logf("[OK] repo finding")
 }
 
 func makeFakeUtilServer() *httptest.Server {

@@ -46,7 +46,7 @@ func getParsedHttpCall(method, path string, body io.Reader, token, csrfT string,
 		return err
 	}
 	if (resp.StatusCode != http.StatusOK) {
-		return fmt.Errorf("Not Authorized")
+		return fmt.Errorf("Not Authorized: %d", resp.StatusCode)
 	}
 	return getParsedResponse(resp, obj)
 }
@@ -62,7 +62,7 @@ func map2struct(in interface{}, out interface{}) error {
 }
 
 // Find gin repos under a certain directory, to which the authenticated user has access
-func findRepos(rpath string, rbd *IndexRequest, gins *GinServer) ([]*gogs.Repository, error) {
+func findRepos(rpath string, rbd *ReIndexRequest, gins *GinServer) ([]*gogs.Repository, error) {
 	var repos [] *gogs.Repository
 	err := filepath.Walk(rpath, func(path string, info os.FileInfo, err error) error {
 		if ! info.IsDir() {
@@ -83,7 +83,7 @@ func findRepos(rpath string, rbd *IndexRequest, gins *GinServer) ([]*gogs.Reposi
 	return repos, err
 }
 
-func hasRepoAccess(repository *gig.Repository, rbd *IndexRequest, gins *GinServer) (*gogs.Repository, error) {
+func hasRepoAccess(repository *gig.Repository, rbd *ReIndexRequest, gins *GinServer) (*gogs.Repository, error) {
 	splPath := strings.Split(repository.Path, string(filepath.Separator))
 	if ! (len(splPath) > 2) {
 		return nil, fmt.Errorf("not a repo path %s", repository.Path)
