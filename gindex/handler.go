@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"bytes"
 	"net/http/httptest"
+	"strings"
 )
 
 // Handler for Index requests
@@ -20,7 +21,7 @@ func IndexH(w http.ResponseWriter, r *http.Request, els *ElServer, rpath *string
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err = IndexRepoWithPath(fmt.Sprintf("%s%s", *rpath, rbd.RepoPath),
+	err = IndexRepoWithPath(fmt.Sprintf("%s%s", rpath, strings.ToLower(rbd.RepoPath)+". git"),
 		"master", els, rbd.RepoID)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -102,8 +103,6 @@ func ReindexH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSe
 	}
 	w.WriteHeader(http.StatusOK)
 }
-
-
 
 func searchNamedIndex(querry, index string, okRepids []string, els *ElServer,
 	result interface{}) error {
