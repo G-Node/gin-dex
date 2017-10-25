@@ -46,7 +46,7 @@ func getParsedHttpCall(method, path string, body io.Reader, token, csrfT string,
 		return err
 	}
 	if (resp.StatusCode != http.StatusOK) {
-		return fmt.Errorf("Not Authorized: %d", resp.StatusCode)
+		return fmt.Errorf("%s: %d, %s", resp.Status, resp.StatusCode, req.URL)
 	}
 	return getParsedResponse(resp, obj)
 }
