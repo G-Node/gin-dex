@@ -45,6 +45,7 @@ func getParsedHttpCall(method, path string, body io.Reader, token, csrfT string,
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 	if (resp.StatusCode != http.StatusOK) {
 		return fmt.Errorf("%s: %d, %s", resp.Status, resp.StatusCode, req.URL)
 	}

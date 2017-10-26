@@ -6,10 +6,10 @@ import (
 )
 
 func IndexRepoWithPath(path, ref string, serv *ElServer, repoid string) error {
-	log.Info("Start indexing repository with path:%s", path)
+	log.Info("Start indexing repository with path: %s", path)
 	rep, err := gig.OpenRepository(path)
 	if err != nil {
-		log.Errorf("Could not open repository: %v", err)
+		log.Errorf("Could not open repository: %+v", err)
 		return err
 	}
 	log.Debugf("Opened repository")

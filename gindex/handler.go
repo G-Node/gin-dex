@@ -111,6 +111,7 @@ func searchNamedIndex(querry, index string, okRepids []string, els *ElServer,
 		return err
 	}
 	err = parseElResult(blobS, &result)
+	blobS.Body.Close()
 	if err != nil {
 		return err
 	}

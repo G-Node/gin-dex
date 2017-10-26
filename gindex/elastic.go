@@ -63,6 +63,7 @@ func (el *ElServer) Has(adr string) (bool, error) {
 		return false, err
 	}
 	bdy, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
 	var res struct{ Found bool }
 	err = json.Unmarshal(bdy, &res)
 	if err != nil {

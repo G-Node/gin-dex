@@ -89,6 +89,7 @@ func (bl *IndexBlob) AddToIndex(server *ElServer, index, repopath string, id gig
 			log.Errorf("Could not open annex file: %+v", err)
 			return err
 		}
+		defer fp.Close()
 		bl.Blob = gig.MakeAnnexBlob(fp, Afile.Info.Size())
 		return bl.AddToIndex(server, index, repopath, id)
 
@@ -120,7 +121,9 @@ func (bl *IndexBlob) IsInIndex() (bool, error) {
 
 func AddToIndex(data []byte, server *ElServer, index, doctype string, id gig.SHA1) error {
 	resp, err := server.Index(index, doctype, data, id)
-	bd, err := ioutil.ReadAll(resp.Body)
-	log.Debugf("Tried adding to the index: %+v, %s", resp, bd)
+	if err != nil {
+		return err
+	}
+	resp.Body.Close()
 	return err
 }
