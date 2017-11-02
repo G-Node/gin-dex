@@ -104,3 +104,7 @@ func hasRepoAccess(repository *gig.Repository, rbd *ReIndexRequest, gins *GinSer
 func GetIndexCommitId(id, repoid string) gig.SHA1 {
 	return sha1.Sum([]byte(repoid + id))
 }
+
+func GetIndexBlobId(id, repoid string) gig.SHA1 {
+	return sha1.Sum([]byte(repoid + id))
+}

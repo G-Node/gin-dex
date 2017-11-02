@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"time"
-	"crypto/sha1"
 
 	"github.com/G-Node/gig"
 	log "github.com/Sirupsen/logrus"
@@ -13,30 +12,29 @@ import (
 
 type IndexBlob struct {
 	*gig.Blob
-	Repoid       string
+	GinRepoId    string
+	FirstCommit  string
 	Id           int64
-	GinRepoId    int64
-	CommitSha    string
-	Path         string
-	Oid          int64
+	Oid          gig.SHA1
 	IndexingTime time.Time
 	Content      string
 }
 
-func NewCommitFromGig(gCommit *gig.Commit, repoid string) *IndexCommit {
-	commit := &IndexCommit{gCommit, repoid, time.Now()}
+func NewCommitFromGig(gCommit *gig.Commit, repoid string, oid gig.SHA1) *IndexCommit {
+	commit := &IndexCommit{gCommit, repoid, oid, time.Now()}
 	return commit
 }
 
-func NewBlobFromGig(gBlob *gig.Blob, repoid string) *IndexBlob {
+func NewBlobFromGig(gBlob *gig.Blob, repoid string, oid gig.SHA1,  commit string) *IndexBlob {
 	// Remember keeping the id
-	blob := IndexBlob{Blob: gBlob, Repoid: repoid}
+	blob := IndexBlob{Blob: gBlob, GinRepoId: repoid, Oid: oid, FirstCommit:commit}
 	return &blob
 }
 
 type IndexCommit struct {
 	*gig.Commit
 	GinRepoId    string
+	Oid          gig.SHA1
 	IndexingTime time.Time
 }
 
@@ -65,7 +63,7 @@ func (bl *IndexBlob) ToJson() ([]byte, error) {
 }
 
 func (bl *IndexBlob) AddToIndex(server *ElServer, index, repopath string, id gig.SHA1) error {
-
+	indexid := GetIndexCommitId(id.String(), bl.GinRepoId)
 	f_type, blobBuffer, err := BlobFileType(bl)
 	if err != nil {
 		log.Errorf("Could not determine file type: %+v", err)
@@ -111,7 +109,7 @@ func (bl *IndexBlob) AddToIndex(server *ElServer, index, repopath string, id gig
 	if err != nil {
 		return err
 	}
-	err = AddToIndex(data, server, index, "blob", id)
+	err = AddToIndex(data, server, index, "blob", indexid)
 	return err
 }
 

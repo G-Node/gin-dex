@@ -3,7 +3,7 @@ package gindex
 type SearchRequest struct {
 	Token  string
 	CsrfT  string
-	UserID int
+	UserID int64
 	Querry string
 }
 
@@ -30,10 +30,10 @@ type BlobSResult struct {
 
 type CommitSResult struct {
 	Source *IndexCommit `json:"_source"`
-	Score  float64    `json:"_score"`
+	Score  float64      `json:"_score"`
 }
 
 type SearchResults struct {
-	Blobs []BlobSResult
+	Blobs   []BlobSResult
 	Commits []CommitSResult
 }
