@@ -13,6 +13,8 @@ import (
 	"path/filepath"
 	"strings"
 	"crypto/sha1"
+	"regexp"
+	"github.com/G-Node/git-module"
 )
 
 func getParsedBody(r *http.Request, obj interface{}) error {
@@ -107,4 +109,20 @@ func GetIndexCommitId(id, repoid string) gig.SHA1 {
 
 func GetIndexBlobId(id, repoid string) gig.SHA1 {
 	return sha1.Sum([]byte(repoid + id))
+}
+
+func GetBlobPath(blid, cid, path string) (string, error) {
+	cmd := git.NewCommand("ls-tree", "-r", cid)
+	res, err := cmd.RunInDirBytes(path)
+	if err != nil {
+		return "", err
+	}
+	pattern := fmt.Sprintf("%s\\s+(.+)", blid)
+	re := regexp.MustCompile(pattern)
+	line_match := re.FindStringSubmatch(string(res))
+	if len(line_match) > 1 {
+		return line_match[1], nil
+	} else {
+		return "", fmt.Errorf("Not found")
+	}
 }

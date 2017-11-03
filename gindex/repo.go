@@ -3,6 +3,7 @@ package gindex
 import (
 	"github.com/G-Node/gig"
 	log "github.com/Sirupsen/logrus"
+	"github.com/G-Node/git-module"
 )
 
 func IndexRepoWithPath(path, ref string, serv *ElServer, repoid string) error {
@@ -38,7 +39,8 @@ func IndexRepoWithPath(path, ref string, serv *ElServer, repoid string) error {
 				return err
 			}
 			if !hasBlob {
-				err = NewBlobFromGig(blob, repoid, blid, commitid.String()).AddToIndex(serv, "blobs", path, blid)
+				bpath, _ := GetBlobPath(blid.String(), commitid.String(), path)
+				err = NewBlobFromGig(blob, repoid, blid, commitid.String(), bpath).AddToIndex(serv, "blobs", path, blid)
 				if err != nil {
 					log.Debugf("Indexing blob failed: %+v", err)
 				}

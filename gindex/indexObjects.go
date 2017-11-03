@@ -18,6 +18,7 @@ type IndexBlob struct {
 	Oid          gig.SHA1
 	IndexingTime time.Time
 	Content      string
+	Path         string
 }
 
 func NewCommitFromGig(gCommit *gig.Commit, repoid string, oid gig.SHA1) *IndexCommit {
@@ -25,9 +26,9 @@ func NewCommitFromGig(gCommit *gig.Commit, repoid string, oid gig.SHA1) *IndexCo
 	return commit
 }
 
-func NewBlobFromGig(gBlob *gig.Blob, repoid string, oid gig.SHA1,  commit string) *IndexBlob {
+func NewBlobFromGig(gBlob *gig.Blob, repoid string, oid gig.SHA1, commit string, path string) *IndexBlob {
 	// Remember keeping the id
-	blob := IndexBlob{Blob: gBlob, GinRepoId: repoid, Oid: oid, FirstCommit:commit}
+	blob := IndexBlob{Blob: gBlob, GinRepoId: repoid, Oid: oid, FirstCommit: commit, Path: path}
 	return &blob
 }
 
