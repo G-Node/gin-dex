@@ -74,11 +74,12 @@ func (el *ElServer) Has(adr string) (bool, error) {
 func (el *ElServer) Search(querry, index string, okRepos []string) (*http.Response, error) {
 	querryBase :=
 		`{
+		  "_source": ["Oid","GinRepoName","FirstCommit","Path"],
 		  "query": {
 			"bool": {
 			  "must": {
 				"match": {
-				  "_all": "%s"
+				  "Content": "%s"
 				}
 			  },
 			  "filter": {
@@ -87,7 +88,16 @@ func (el *ElServer) Search(querry, index string, okRepos []string) (*http.Respon
 				}
 			  }
 			}
-		  }
+		},
+		"highlight" : {
+			"fields" : {
+				"Content" : {
+					"fragment_size" : 100,
+					"number_of_fragments" : 3,
+					"fragmenter": "span"
+					}
+				}
+			}
 		}`
 	//implement the passing of the repo ids
 	repos, err := json.Marshal(okRepos)

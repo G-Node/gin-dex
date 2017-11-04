@@ -8,10 +8,12 @@ import (
 	"github.com/G-Node/gig"
 	log "github.com/Sirupsen/logrus"
 	"github.com/G-Node/go-annex"
+	"fmt"
 )
 
 type IndexBlob struct {
 	*gig.Blob
+	GinRepoName  string
 	GinRepoId    string
 	FirstCommit  string
 	Id           int64
@@ -26,9 +28,9 @@ func NewCommitFromGig(gCommit *gig.Commit, repoid string, oid gig.SHA1) *IndexCo
 	return commit
 }
 
-func NewBlobFromGig(gBlob *gig.Blob, repoid string, oid gig.SHA1, commit string, path string) *IndexBlob {
+func NewBlobFromGig(gBlob *gig.Blob, repoid string, oid gig.SHA1, commit string, path string, reponame string) *IndexBlob {
 	// Remember keeping the id
-	blob := IndexBlob{Blob: gBlob, GinRepoId: repoid, Oid: oid, FirstCommit: commit, Path: path}
+	blob := IndexBlob{Blob: gBlob, GinRepoId: repoid, Oid: oid, FirstCommit: commit, Path: path, GinRepoName: reponame}
 	return &blob
 }
 
@@ -65,6 +67,9 @@ func (bl *IndexBlob) ToJson() ([]byte, error) {
 
 func (bl *IndexBlob) AddToIndex(server *ElServer, index, repopath string, id gig.SHA1) error {
 	indexid := GetIndexCommitId(id.String(), bl.GinRepoId)
+	if bl.Size() > gannex.MEGABYTE*10 {
+		return fmt.Errorf("File to big")
+	}
 	f_type, blobBuffer, err := BlobFileType(bl)
 	if err != nil {
 		log.Errorf("Could not determine file type: %+v", err)
