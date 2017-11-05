@@ -74,6 +74,7 @@ func (el *ElServer) Has(adr string) (bool, error) {
 func (el *ElServer) Search(querry, index string, okRepos []string) (*http.Response, error) {
 	querryBase :=
 		`{
+		"from" : 0, "size" : 20,
 		  "_source": ["Oid","GinRepoName","FirstCommit","Path"],
 		  "query": {
 			"bool": {
@@ -93,8 +94,10 @@ func (el *ElServer) Search(querry, index string, okRepos []string) (*http.Respon
 			"fields" : {
 				"Content" : {
 					"fragment_size" : 100,
-					"number_of_fragments" : 3,
-					"fragmenter": "span"
+					"number_of_fragments" : 10,
+					"fragmenter": "span",
+					"pre_tags" : ["<b>"],
+					"post_tags" : ["</b>"]
 					}
 				}
 			}
