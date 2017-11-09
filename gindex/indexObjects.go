@@ -65,14 +65,15 @@ func (bl *IndexBlob) ToJson() ([]byte, error) {
 }
 
 func (bl *IndexBlob) AddToIndex(server *ElServer, index string, id gig.SHA1) error {
-	f_type, err := DetermineFileType(bl)
+
+	f_type, err := BlobFileType(bl)
 	if err != nil {
 		log.Errorf("Could not determine file type: %+v", err)
 		return nil
 	}
 	switch f_type {
 	case TEXT:
-		log.Debugf("Text file found detected")
+		log.Debugf("Text file detected")
 		ct, err := ioutil.ReadAll(bl)
 		if err != nil {
 			log.Errorf("Could not read text file content:%+v", err)
