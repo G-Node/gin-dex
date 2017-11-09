@@ -77,25 +77,26 @@ func (bl *IndexBlob) AddToIndex(server *ElServer, index, repopath string, id gig
 	}
 	switch f_type {
 	case ANNEX:
-		APFileC, err := ioutil.ReadAll(blobBuffer)
-		log.Debugf("Annex file:%s", APFileC)
-		if err != nil {
-			log.Errorf("Could not open annex pointer file: %+v", err)
-			return err
-		}
-		Afile, err := gannex.NewAFile(repopath, "", "", APFileC)
-		if err != nil {
-			log.Errorf("Could not get annex file%+v", err)
-			return err
-		}
-		fp, err := Afile.Open()
-		if err != nil {
-			log.Errorf("Could not open annex file: %+v", err)
-			return err
-		}
-		defer fp.Close()
-		bl.Blob = gig.MakeAnnexBlob(fp, Afile.Info.Size())
-		return bl.AddToIndex(server, index, repopath, id)
+		fallthrough // deactivated fort the time being
+		/*		APFileC, err := ioutil.ReadAll(blobBuffer)
+				log.Debugf("Annex file:%s", APFileC)
+				if err != nil {
+					log.Errorf("Could not open annex pointer file: %+v", err)
+					return err
+				}
+				Afile, err := gannex.NewAFile(repopath, "", "", APFileC)
+				if err != nil {
+					log.Errorf("Could not get annex file%+v", err)
+					return err
+				}
+				fp, err := Afile.Open()
+				if err != nil {
+					log.Errorf("Could not open annex file: %+v", err)
+					return err
+				}
+				defer fp.Close()
+				bl.Blob = gig.MakeAnnexBlob(fp, Afile.Info.Size())
+				return bl.AddToIndex(server, index, repopath, id)*/
 
 	case TEXT:
 		ct, err := ioutil.ReadAll(blobBuffer)

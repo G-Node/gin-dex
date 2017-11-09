@@ -76,6 +76,24 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSer
 	w.Write(data)
 }
 
+// Handler for Index requests
+func ReIndexRepo(w http.ResponseWriter, r *http.Request, els *ElServer, rpath *string) {
+	rbd := IndexRequest{}
+	err := getParsedBody(r, &rbd)
+	log.Debugf("got a indexing request:%+v", rbd)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	err = ReIndexRepoWithPath(fmt.Sprintf("%s/%s", *rpath, strings.ToLower(rbd.RepoPath)+".git"),
+		"master", els, rbd.RepoID, rbd.RepoPath)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	return
+}
 func ReindexH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinServer, rpath *string) {
 	rbd := ReIndexRequest{}
 	getParsedBody(r, &rbd)
@@ -97,7 +115,7 @@ func ReindexH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSe
 			fmt.Sprintf("%d", repo.ID)}
 		data, _ := json.Marshal(ireq)
 		req, _ := http.NewRequest(http.MethodPost, "/index", bytes.NewReader(data))
-		IndexH(rec, req, els, rpath)
+		ReIndexRepo(rec, req, els, rpath)
 		if rec.Code != http.StatusOK {
 			log.Debugf("Could not index %s,%d", repo.FullName, rec.Code)
 		}
