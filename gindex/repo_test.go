@@ -17,8 +17,8 @@ func TestRepoIndexing(t *testing.T) {
 		requests = append(requests, *r)
 	}))
 	defer ts.Close()
-	fakeServer := ElServer{ts.URL}
-	err := IndexRepoWithPath("../tdata/repo1.git", &fakeServer, "testid")
+	fakeServer := ElServer{adress: ts.URL}
+	err := IndexRepoWithPath("../tdata/repo1.git", "tag1", &fakeServer, "testid")
 	if err != nil {
 		t.Errorf("Could  not open repository:%v", err)
 	}

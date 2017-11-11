@@ -88,15 +88,16 @@ func (el *ElServer) Search(querry, index string, okRepos []string) (*http.Respon
 	//implement the passing of the repo ids
 	repos, err := json.Marshal(okRepos)
 	if err != nil {
-		log.Errorf("Could not marshcal okRepos: %+v", err)
+		log.Errorf("Could not marshal okRepos: %+v", err)
 		return nil, err
 	}
 	formatted_querry := fmt.Sprintf(querryBase, querry, string(repos))
 	adrr := fmt.Sprintf("%s/%s/_search", el.adress, index)
-	log.Debugf("Formatted query is:%s", formatted_querry)
+
 	req, err := http.NewRequest("POST", adrr, bytes.NewReader([]byte(formatted_querry)))
 	if err != nil {
 		log.Errorf("Could not form search query:%+v", err)
+		log.Errorf("Formatted query was:%s", formatted_querry)
 		return nil, err
 	}
 	return el.elasticRequest(req)
