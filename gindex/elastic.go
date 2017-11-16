@@ -19,6 +19,11 @@ type ElServer struct {
 	password *string
 }
 
+const(
+	BLOB_INDEX = "blobs"
+	COMMIT_INDEX = "commits"
+)
+
 func NewElServer(adress string, uname, password *string) *ElServer {
 	return &ElServer{adress: adress, uname: uname, password: password}
 }
@@ -71,51 +76,106 @@ func (el *ElServer) Has(adr string) (bool, error) {
 	return res.Found, nil
 }
 
-func (el *ElServer) Search(querry, index string, okRepos []string) (*http.Response, error) {
-	querryBase :=
-		`{
-		"from" : 0, "size" : 20,
-		  "_source": ["Oid","GinRepoName","FirstCommit","Path"],
-		  "query": {
-			"bool": {
-			  "must": {
-				"match": {
-				  "Content": "%s"
-				}
-			  },
-			  "filter": {
-				"terms": {
-				  "GinRepoId" : %s
-				}
-			  }
-			}
-		},
-		"highlight" : {
-			"fields" : {
-				"Content" : {
-					"fragment_size" : 100,
-					"number_of_fragments" : 10,
-					"fragmenter": "span",
-					"pre_tags" : ["<b>"],
-					"post_tags" : ["</b>"]
-					}
-				}
-			}
-		}`
+func (el *ElServer) search (querry, adrr string) (*http.Response, error) {
+	req, err := http.NewRequest("POST", adrr, bytes.NewReader([]byte(querry)))
+	if err != nil {
+		log.Errorf("Could not form search query:%+v", err)
+		log.Errorf("Formatted query was:%s", querry)
+		return nil, err
+	}
+	return el.elasticRequest(req)
+}
+
+func (el *ElServer) SearchBlobs(querry string, okRepos []string) (*http.Response, error) {
 	//implement the passing of the repo ids
 	repos, err := json.Marshal(okRepos)
 	if err != nil {
 		log.Errorf("Could not marshal okRepos: %+v", err)
 		return nil, err
 	}
-	formatted_querry := fmt.Sprintf(querryBase, querry, string(repos))
-	adrr := fmt.Sprintf("%s/%s/_search", el.adress, index)
+	formatted_querry := fmt.Sprintf(BLOB_QUERRY, querry, string(repos))
+	adrr := fmt.Sprintf("%s/%s/_search", el.adress, BLOB_INDEX)
+	return el.search(formatted_querry, adrr)
+}
 
-	req, err := http.NewRequest("POST", adrr, bytes.NewReader([]byte(formatted_querry)))
+
+
+func (el *ElServer) SearchCommits(querry string, okRepos []string) (*http.Response, error) {
+	//implement the passing of the repo ids
+	repos, err := json.Marshal(okRepos)
 	if err != nil {
-		log.Errorf("Could not form search query:%+v", err)
-		log.Errorf("Formatted query was:%s", formatted_querry)
+		log.Errorf("Could not marshal okRepos: %+v", err)
 		return nil, err
 	}
-	return el.elasticRequest(req)
+	formatted_querry := fmt.Sprintf(COMMIT_QUERRY, querry, string(repos))
+	adrr := fmt.Sprintf("%s/%s/_search", el.adress, COMMIT_INDEX)
+	return el.search(formatted_querry, adrr)
 }
+
+
+var BLOB_QUERRY = `{
+"from" : 0, "size" : 20,
+  "_source": ["Oid","GinRepoName","FirstCommit","Path"],
+  "query": {
+	"bool": {
+	  "must": {
+		"match": {
+		  "Content": "%s"
+		}
+	  },
+	  "filter": {
+		"terms": {
+		  "GinRepoId" : %s
+		}
+	  }
+	}
+},
+"highlight" : {
+	"fields" : {
+		"Content" : {
+			"fragment_size" : 100,
+			"number_of_fragments" : 10,
+			"fragmenter": "span",
+			"pre_tags" : ["<b>"],
+			"post_tags" : ["</b>"]
+			}
+		}
+	}
+}`
+
+var COMMIT_QUERRY = `{
+	"from" : 0, "size" : 20,
+	  "_source": ["Oid","GinRepoName","FirstCommit","Path"],
+	  "query": {
+		"bool": {
+		  "must": {
+			"match": {
+			  "_all": "%s"
+			}
+		  },
+		  "filter": {
+			"terms": {
+			  "GinRepoId" : %s
+			}
+		  }
+		}
+	},
+	"highlight" : {
+		"fields" : [
+			{"Message" : {
+				"fragment_size" : 50,
+				"number_of_fragments" : 3,
+				"fragmenter": "span",
+				"require_field_match":false
+				}
+			},
+			{"GinRepoName" : {
+				"fragment_size" : 50,
+				"number_of_fragments" : 3,
+				"fragmenter": "span",
+				"require_field_match":false
+				}
+			}
+		]
+	}
+}`

@@ -25,7 +25,7 @@ func TestServerSearch(t *testing.T) {
 	pw := "changeme"
 	un := "elastic"
 	fakeServer := ElServer{adress: "http://127.0.0.1:9200", uname: &un, password: &pw}
-	res, err := fakeServer.Search("christian", "commits", []string{"testid", "hhjh"})
+	res, err := fakeServer.SearchBlobs("christian", "commits", []string{"testid", "hhjh"})
 	if err != nil {
 		t.Errorf("Could  not index repo:%v", err)
 	}

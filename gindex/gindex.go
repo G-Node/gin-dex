@@ -30,8 +30,9 @@ type BlobSResult struct {
 }
 
 type CommitSResult struct {
-	Source *IndexCommit `json:"_source"`
-	Score  float64      `json:"_score"`
+	Source    *IndexCommit `json:"_source"`
+	Score     float64      `json:"_score"`
+	Highlight interface{}  `json:"highlight"`
 }
 
 type SearchResults struct {

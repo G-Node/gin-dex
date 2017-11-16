@@ -61,7 +61,7 @@ func ReIndexRepoWithPath(path, ref string, serv *ElServer, repoid string, repona
 func indexCommit(commit *gig.Commit, repoid string, commitid gig.SHA1, rep *gig.Repository,
 	path string, reponame string, serv *ElServer,
 	indexBlob func(string, gig.SHA1) (bool, error)) error {
-	err := NewCommitFromGig(commit, repoid, commitid).AddToIndex(serv, "commits", commitid)
+	err := NewCommitFromGig(commit, repoid, reponame, commitid).AddToIndex(serv, "commits", commitid)
 	if err != nil {
 		log.Printf("Indexing commit failed:%+v", err)
 	}

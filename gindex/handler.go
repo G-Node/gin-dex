@@ -31,7 +31,7 @@ func IndexH(w http.ResponseWriter, r *http.Request, els *ElServer, rpath *string
 	return
 }
 
-// Handler for Search requests
+// Handler for SearchBlobs requests
 func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinServer) {
 	rbd := SearchRequest{}
 	err := getParsedBody(r, &rbd)
@@ -68,12 +68,12 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSer
 	log.Debugf("Repod to search in:%+v", repids)
 	// Lets search now
 	rBlobs := [] BlobSResult{}
-	err = searchNamedIndex(rbd.Querry, "blobs", repids, els, &rBlobs)
+	err = searchBlobs(rbd.Querry, repids, els, &rBlobs)
 	if err != nil {
 		log.Warnf("could not search blobs:%+v", err)
 	}
 	rCommits := [] CommitSResult{}
-	err = searchNamedIndex(rbd.Querry, "commits", repids, els, &rCommits)
+	err = searchCommits(rbd.Querry, repids, els, &rCommits)
 	if err != nil {
 		log.Warnf("could not search commits:%+v", err)
 	}
@@ -134,9 +134,23 @@ func ReindexH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSe
 	w.WriteHeader(http.StatusOK)
 }
 
-func searchNamedIndex(querry, index string, okRepids []string, els *ElServer,
+func searchCommits(querry string, okRepids []string, els *ElServer,
 	result interface{}) error {
-	blobS, err := els.Search(querry, index, okRepids)
+	commS, err := els.SearchCommits(querry, okRepids)
+	if err != nil {
+		return err
+	}
+	err = parseElResult(commS, &result)
+	commS.Body.Close()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func searchBlobs(querry string, okRepids []string, els *ElServer,
+	result interface{}) error {
+	blobS, err := els.SearchBlobs(querry, okRepids)
 	if err != nil {
 		return err
 	}

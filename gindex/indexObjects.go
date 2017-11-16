@@ -23,8 +23,9 @@ type IndexBlob struct {
 	Path         string
 }
 
-func NewCommitFromGig(gCommit *gig.Commit, repoid string, oid gig.SHA1) *IndexCommit {
-	commit := &IndexCommit{gCommit, repoid, oid, time.Now()}
+func NewCommitFromGig(gCommit *gig.Commit, repoid string, reponame string, oid gig.SHA1) *IndexCommit {
+	commit := &IndexCommit{gCommit, repoid, oid,
+		reponame, time.Now()}
 	return commit
 }
 
@@ -38,6 +39,7 @@ type IndexCommit struct {
 	*gig.Commit
 	GinRepoId    string
 	Oid          gig.SHA1
+	GinRepoName  string
 	IndexingTime time.Time
 }
 

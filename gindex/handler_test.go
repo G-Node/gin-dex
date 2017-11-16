@@ -44,7 +44,7 @@ func TestIndexHandler(t *testing.T) {
 
 func TestSearchHandler(t *testing.T) {
 	log.SetLevel(log.ErrorLevel)
-	rbd := SearchRequest{Token: "testtoken", UserID: 10, Querry: "Test Search"}
+	rbd := SearchRequest{Token: "testtoken", UserID: 10, Querry: "Test SearchBlobs"}
 	data, err := json.Marshal(rbd)
 	if err != nil {
 		log.Debugf("could not marshal search request:%+v", err)
