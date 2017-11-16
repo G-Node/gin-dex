@@ -50,15 +50,15 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSer
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-        // Get repos ids for public repos
-        prepos := struct{ Data []gogs.Repository }{}
-        err = getParsedHttpCall(http.MethodGet, fmt.Sprintf("%s/api/v1/repos/search", gins.URL),
-                nil, rbd.Token, rbd.CsrfT, &prepos)
-        if err != nil {
-                log.Errorf("could not querry public repos: %+v", err)
-                w.WriteHeader(http.StatusUnauthorized)
-                return
-        }
+	// Get repos ids for public repos
+	prepos := struct{ Data []gogs.Repository }{}
+	err = getParsedHttpCall(http.MethodGet, fmt.Sprintf("%s/api/v1/repos/search/?limit=10000", gins.URL),
+		nil, rbd.Token, rbd.CsrfT, &prepos)
+	if err != nil {
+		log.Errorf("could not querry public repos: %+v", err)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 	repos = append(repos, prepos.Data...)
 
 	repids := make([]string, len(repos))
