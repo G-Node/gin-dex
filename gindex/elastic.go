@@ -19,8 +19,8 @@ type ElServer struct {
 	password *string
 }
 
-const(
-	BLOB_INDEX = "blobs"
+const (
+	BLOB_INDEX   = "blobs"
 	COMMIT_INDEX = "commits"
 )
 
@@ -76,7 +76,7 @@ func (el *ElServer) Has(adr string) (bool, error) {
 	return res.Found, nil
 }
 
-func (el *ElServer) search (querry, adrr string) (*http.Response, error) {
+func (el *ElServer) search(querry, adrr string) (*http.Response, error) {
 	req, err := http.NewRequest("POST", adrr, bytes.NewReader([]byte(querry)))
 	if err != nil {
 		log.Errorf("Could not form search query:%+v", err)
@@ -98,8 +98,6 @@ func (el *ElServer) SearchBlobs(querry string, okRepos []string) (*http.Response
 	return el.search(formatted_querry, adrr)
 }
 
-
-
 func (el *ElServer) SearchCommits(querry string, okRepos []string) (*http.Response, error) {
 	//implement the passing of the repo ids
 	repos, err := json.Marshal(okRepos)
@@ -111,7 +109,6 @@ func (el *ElServer) SearchCommits(querry string, okRepos []string) (*http.Respon
 	adrr := fmt.Sprintf("%s/%s/_search", el.adress, COMMIT_INDEX)
 	return el.search(formatted_querry, adrr)
 }
-
 
 var BLOB_QUERRY = `{
 "from" : 0, "size" : 20,
@@ -166,14 +163,18 @@ var COMMIT_QUERRY = `{
 				"fragment_size" : 50,
 				"number_of_fragments" : 3,
 				"fragmenter": "span",
-				"require_field_match":false
+				"require_field_match":false,
+				"pre_tags" : ["<b>"],
+				"post_tags" : ["</b>"]
 				}
 			},
 			{"GinRepoName" : {
 				"fragment_size" : 50,
 				"number_of_fragments" : 3,
 				"fragmenter": "span",
-				"require_field_match":false
+				"require_field_match":false,
+				"pre_tags" : ["<b>"],
+				"post_tags" : ["</b>"]
 				}
 			}
 		]
