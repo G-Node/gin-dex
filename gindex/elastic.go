@@ -111,32 +111,34 @@ func (el *ElServer) SearchCommits(querry string, okRepos []string) (*http.Respon
 }
 
 var BLOB_QUERRY = `{
-"from" : 0, "size" : 20,
-  "_source": ["Oid","GinRepoName","FirstCommit","Path"],
-  "query": {
-	"bool": {
-	  "must": {
-		"match": {
-		  "Content": "%s"
-		}
-	  },
-	  "filter": {
-		"terms": {
-		  "GinRepoId" : %s
-		}
-	  }
-	}
-},
-"highlight" : {
-	"fields" : {
-		"Content" : {
-			"fragment_size" : 100,
-			"number_of_fragments" : 10,
-			"fragmenter": "span",
-			"pre_tags" : ["<b>"],
-			"post_tags" : ["</b>"]
+	"from" : 0, "size" : 20,
+	  "_source": ["Oid","GinRepoName","FirstCommit","Path"],
+	  "query": {
+		"bool": {
+		  "must": {
+			"match": {
+			  "_all": "%s"
 			}
+		  },
+		  "filter": {
+			"terms": {
+			  "GinRepoId" : %s
+			}
+		  }
 		}
+	},
+	"highlight" : {
+		"fields" : [
+			{"Content" : {
+				"fragment_size" : 100,
+				"number_of_fragments" : 10,
+				"fragmenter": "span",
+				"require_field_match":false,
+				"pre_tags" : ["<b>"],
+				"post_tags" : ["</b>"]
+				}
+			}
+		]
 	}
 }`
 
