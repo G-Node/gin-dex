@@ -113,7 +113,15 @@ func (bl *IndexBlob) AddToIndex(server *ElServer, index, repopath string, id gig
 			return err
 		}
 		bl.Content = string(ct)
+	case PDF:
+		content, err := GetPlainPdf(blobBuffer, bl.Size())
+		if err != nil {
+			log.Debugf("Could not read pdf: %+v", err)
+			return err
+		}
+		bl.Content = content
 	}
+
 	data, err := bl.ToJson()
 	if err != nil {
 		return err

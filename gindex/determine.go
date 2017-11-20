@@ -15,6 +15,7 @@ const (
 	ANNEX
 	ODML_XML
 	TEXT
+	PDF
 )
 
 func DetermineFileType(peekData []byte) (int64, error) {
@@ -29,6 +30,10 @@ func DetermineFileType(peekData []byte) (int64, error) {
 		}
 		logrus.Debugf("Found a text file")
 		return TEXT, nil
+	}
+	if strings.Contains(typeStr, "pdf"){
+		logrus.Debugf("Found a pdf file")
+		return PDF, nil
 	}
 	return UKKNOWN, nil
 

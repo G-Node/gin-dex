@@ -15,6 +15,11 @@ import (
 	"crypto/sha1"
 	"regexp"
 	"github.com/G-Node/git-module"
+	pdfcontent "github.com/unidoc/unidoc/pdf/contentstream"
+	pdf "github.com/unidoc/unidoc/pdf/model"
+
+	"bytes"
+	"bufio"
 )
 
 func getParsedBody(r *http.Request, obj interface{}) error {
@@ -125,4 +130,52 @@ func GetBlobPath(blid, cid, path string) (string, error) {
 	} else {
 		return "", fmt.Errorf("Not found")
 	}
+}
+
+func GetPlainPdf(blobBuffer *bufio.Reader, size int64) (string, error) {
+	// todo skip the creation of byte[] -> do directly
+	data, err := ioutil.ReadAll(blobBuffer)
+	if err != nil {
+		return "", err
+	}
+	pdoc, err := pdf.NewPdfReader(bytes.NewReader(data))
+	if err != nil {
+		return "", err
+	}
+	isEncrypted, err := pdoc.IsEncrypted()
+	if err != nil {
+		return "", err
+	}
+
+	if isEncrypted {
+		return "", fmt.Errorf("PDF encrypted")
+	}
+
+	numPages, err := pdoc.GetNumPages()
+	if err != nil {
+		return "", err
+	}
+	for i := 0; i < numPages; i++ {
+		pageNum := i + 1
+
+		page, err := pdoc.GetPage(pageNum)
+		if err != nil {
+			return "", err
+		}
+
+		contentStreams, err := page.GetContentStreams()
+		if err != nil {
+			return "", err
+		}
+
+		// If the value is an array, the effect shall be as if all of the streams in the array were concatenated,
+		// in order, to form a single stream.
+		pageContentStr := ""
+		for _, cstream := range contentStreams {
+			pageContentStr += cstream
+		}
+		cstreamParser := pdfcontent.NewContentStreamParser(pageContentStr)
+		return cstreamParser.ExtractText()
+	}
+	return "", fmt.Errorf("Could not extract text from PDF")
 }
