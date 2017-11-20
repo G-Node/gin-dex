@@ -16,9 +16,11 @@ const (
 	ODML_XML
 	TEXT
 	PDF
+	NEV
 )
 
 func DetermineFileType(peekData []byte) (int64, error) {
+	logrus.Debugf("peek is  %s ", string(peekData[:8]))
 	if tool.IsAnnexedFile(peekData){
 		logrus.Debugf("Found an annex file")
 		return ANNEX,nil
@@ -35,6 +37,12 @@ func DetermineFileType(peekData []byte) (int64, error) {
 		logrus.Debugf("Found a pdf file")
 		return PDF, nil
 	}
+
+	if string(peekData[:8]) == "NEURALEV" {
+		logrus.Debugf("Found a nev file")
+		return NEV, nil
+	}
+
 	return UKKNOWN, nil
 
 }

@@ -179,3 +179,14 @@ func GetPlainPdf(blobBuffer *bufio.Reader, size int64) (string, error) {
 	}
 	return "", fmt.Errorf("Could not extract text from PDF")
 }
+
+func GetNevComments(blobBuf *bufio.Reader) (*string, error) {
+	// get the header
+	header, err := blobBuf.Peek(332)
+	if err != nil {
+		return nil, err
+	}
+	comment := string(header[76:332])
+	return &comment, nil
+
+}

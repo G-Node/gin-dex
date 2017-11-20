@@ -69,7 +69,7 @@ func (bl *IndexBlob) ToJson() ([]byte, error) {
 
 func (bl *IndexBlob) AddToIndex(server *ElServer, index, repopath string, id gig.SHA1) error {
 	indexid := GetIndexCommitId(id.String(), bl.GinRepoId)
-	if bl.Size() > gannex.MEGABYTE*10 {
+	if bl.Size() > gannex.MEGABYTE*1000 {
 		return fmt.Errorf("File to big")
 	}
 	f_type, blobBuffer, err := BlobFileType(bl)
@@ -79,26 +79,25 @@ func (bl *IndexBlob) AddToIndex(server *ElServer, index, repopath string, id gig
 	}
 	switch f_type {
 	case ANNEX:
-		fallthrough // deactivated fort the time being
-		/*		APFileC, err := ioutil.ReadAll(blobBuffer)
-				log.Debugf("Annex file:%s", APFileC)
-				if err != nil {
-					log.Errorf("Could not open annex pointer file: %+v", err)
-					return err
-				}
-				Afile, err := gannex.NewAFile(repopath, "", "", APFileC)
-				if err != nil {
-					log.Errorf("Could not get annex file%+v", err)
-					return err
-				}
-				fp, err := Afile.Open()
-				if err != nil {
-					log.Errorf("Could not open annex file: %+v", err)
-					return err
-				}
-				defer fp.Close()
-				bl.Blob = gig.MakeAnnexBlob(fp, Afile.Info.Size())
-				return bl.AddToIndex(server, index, repopath, id)*/
+		APFileC, err := ioutil.ReadAll(blobBuffer)
+		log.Debugf("Annex file:%s", APFileC)
+		if err != nil {
+			log.Errorf("Could not open annex pointer file: %+v", err)
+			return err
+		}
+		Afile, err := gannex.NewAFile(repopath, "", "", APFileC)
+		if err != nil {
+			log.Errorf("Could not get annex file%+v", err)
+			return err
+		}
+		fp, err := Afile.Open()
+		if err != nil {
+			log.Errorf("Could not open annex file: %+v", err)
+			return err
+		}
+		defer fp.Close()
+		bl.Blob = gig.MakeAnnexBlob(fp, Afile.Info.Size())
+		return bl.AddToIndex(server, index, repopath, id)
 
 	case TEXT:
 		ct, err := ioutil.ReadAll(blobBuffer)
@@ -120,7 +119,15 @@ func (bl *IndexBlob) AddToIndex(server *ElServer, index, repopath string, id gig
 			return err
 		}
 		bl.Content = content
+	case NEV:
+		// Get the main nev comemnts
+		com, err := GetNevComments(blobBuffer)
+		if err != nil {
+			return err
+		}
+		bl.Content = *com
 	}
+
 
 	data, err := bl.ToJson()
 	if err != nil {
