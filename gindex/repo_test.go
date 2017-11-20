@@ -1,20 +1,28 @@
 package gindex
 
 import (
-	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	log "github.com/Sirupsen/logrus"
+	"strings"
 )
 
 func TestRepoIndexing(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
 	var requests []http.Request
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Did receive the following:%v", r)
-		ct, _ := ioutil.ReadAll(r.Body)
-		log.Printf("Did receive the following content:%v", string(ct))
 		requests = append(requests, *r)
+		if (r.Method == http.MethodGet && strings.Contains(r.URL.Path, "commits")) {
+			log.Printf("Need to reply with found")
+			w.Write([]byte(`{"found": false}`))
+		}
+		if (r.Method == http.MethodGet && strings.Contains(r.URL.Path, "blobs")) {
+			log.Printf("Need to reply with found")
+			w.Write([]byte(`{"found": false}`))
+		}
 	}))
 	defer ts.Close()
 	fakeServer := ElServer{adress: ts.URL}
@@ -23,4 +31,33 @@ func TestRepoIndexing(t *testing.T) {
 		t.Errorf("Could  not open repository:%v", err)
 	}
 	log.Printf("Request n :%+v", requests)
+}
+
+func TestAnnexIndexing(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("Did receive the following:%v", r)
+		if (r.Method == http.MethodGet && strings.Contains(r.URL.Path, "commits")) {
+			log.Printf("Need to reply with found")
+			w.Write([]byte(`{"found": false}`))
+		}
+		if (r.Method == http.MethodGet && strings.Contains(r.URL.Path, "blobs")) {
+			log.Printf("Need to reply with found")
+			w.Write([]byte(`{"found": false}`))
+		}
+
+		if (r.Method == http.MethodPost && strings.Contains(r.URL.Path, "blob/f78b7903bd67c78a98ccd4deffd3904dc0a3b431")) {
+			if (r.ContentLength == 150) {
+				w.WriteHeader(http.StatusOK)
+			} else {
+				w.WriteHeader(http.StatusBadRequest)
+			}
+		}
+	}))
+	defer ts.Close()
+	fakeServer := ElServer{adress: ts.URL}
+	err := IndexRepoWithPath("../tdata/repo2.git", "tag2", &fakeServer, "annextest")
+	if err != nil {
+		t.Errorf("Could  not open repository:%v", err)
+	}
 }

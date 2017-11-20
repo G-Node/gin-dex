@@ -31,13 +31,14 @@ func IndexRepoWithPath(path, ref string, serv *ElServer, repoid string) error {
 		blobs := make(map[gig.SHA1]*gig.Blob)
 		rep.GetBlobsForCommit(commit, blobs)
 		for blid, blob := range blobs {
+			log.Debugf("Blob has Size:%d", blob.Size())
 			hasBlob, err := serv.HasBlob("blobs", blid)
 			if err != nil {
 				log.Errorf("Could not querry for blob: %+v", err)
 				return err
 			}
 			if !hasBlob {
-				err := NewBlobFromGig(blob, repoid).AddToIndex(serv, "blobs", path, blid)
+				err = NewBlobFromGig(blob, repoid).AddToIndex(serv, "blobs", path, blid)
 				if err != nil {
 					log.Debugf("Indexing blob failed: %+v", err)
 				}
