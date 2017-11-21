@@ -39,3 +39,8 @@ type SearchResults struct {
 	Blobs   []BlobSResult
 	Commits []CommitSResult
 }
+
+var Setting struct {
+	TxtFileMSize int64
+	PdfFileMSize int64
+}
