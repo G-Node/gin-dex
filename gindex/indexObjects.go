@@ -69,9 +69,6 @@ func (bl *IndexBlob) ToJson() ([]byte, error) {
 
 func (bl *IndexBlob) AddToIndex(server *ElServer, index, repopath string, id gig.SHA1) error {
 	indexid := GetIndexCommitId(id.String(), bl.GinRepoId)
-	if bl.Size() > gannex.MEGABYTE*1000 {
-		return fmt.Errorf("File to big")
-	}
 	f_type, blobBuffer, err := BlobFileType(bl)
 	if err != nil {
 		log.Errorf("Could not determine file type: %+v", err)
@@ -100,6 +97,9 @@ func (bl *IndexBlob) AddToIndex(server *ElServer, index, repopath string, id gig
 		return bl.AddToIndex(server, index, repopath, id)
 
 	case TEXT:
+		if bl.Size() > gannex.MEGABYTE*Setting.TxtMSize {
+			return fmt.Errorf("File to big")
+		}
 		ct, err := ioutil.ReadAll(blobBuffer)
 		if err != nil {
 			log.Errorf("Could not read text file content:%+v", err)
@@ -113,6 +113,9 @@ func (bl *IndexBlob) AddToIndex(server *ElServer, index, repopath string, id gig
 		}
 		bl.Content = string(ct)
 	case PDF:
+		if bl.Size() > gannex.MEGABYTE*Setting.PdfMSize {
+			return fmt.Errorf("File to big")
+		}
 		content, err := GetPlainPdf(blobBuffer, bl.Size())
 		if err != nil {
 			log.Debugf("Could not read pdf: %+v", err)

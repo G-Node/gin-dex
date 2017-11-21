@@ -41,6 +41,6 @@ type SearchResults struct {
 }
 
 var Setting struct {
-	TxtFileMSize int64
-	PdfFileMSize int64
+	TxtMSize int64
+	PdfMSize int64
 }
