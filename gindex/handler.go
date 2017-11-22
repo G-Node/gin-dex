@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"net/http/httptest"
 	"strings"
+	"sync"
 )
 
 // Handler for Index requests
@@ -119,6 +120,10 @@ func ReindexH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSe
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	jobQue := make(chan IndexJob, 10)
+	disp := NewDispatcher(jobQue, 3)
+	disp.Run(NewWorker)
+	wg := sync.WaitGroup{}
 
 	for _, repo := range repos {
 		rec := httptest.NewRecorder()
@@ -126,11 +131,10 @@ func ReindexH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSe
 			fmt.Sprintf("%d", repo.ID)}
 		data, _ := json.Marshal(ireq)
 		req, _ := http.NewRequest(http.MethodPost, "/index", bytes.NewReader(data))
-		ReIndexRepo(rec, req, els, rpath)
-		if rec.Code != http.StatusOK {
-			log.Debugf("Could not index %s,%d", repo.FullName, rec.Code)
-		}
+		wg.Add(1)
+		jobQue <- IndexJob{rec, req, els, rpath, &wg}
 	}
+	wg.Wait()
 	w.WriteHeader(http.StatusOK)
 }
 
