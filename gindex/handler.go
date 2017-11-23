@@ -22,7 +22,11 @@ func IndexH(w http.ResponseWriter, r *http.Request, els *ElServer, rpath *string
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err = IndexRepoWithPath(fmt.Sprintf("%s/%s", *rpath, strings.ToLower(rbd.RepoPath)+".git"),
+	repo := strings.ToLower(rbd.RepoPath)
+	if repo[len(repo)-4:] != ".git" {
+		repo = repo + ".git"
+	}
+	err = IndexRepoWithPath(fmt.Sprintf("%s/%s", *rpath, repo),
 		"master", els, rbd.RepoID, rbd.RepoPath)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
