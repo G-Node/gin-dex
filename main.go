@@ -40,6 +40,12 @@ Options:
 	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
 		gindex.SearchH(w, r, els, gin)
 	})
+
+	http.HandleFunc("/reindex", func(w http.ResponseWriter, r *http.Request) {
+		gindex.ReindexH(w, r, els, gin, &rpath)
+	})
+
+
 	if args["--debug"].(bool) {
 		log.SetLevel(log.DebugLevel)
 		log.SetFormatter(&log.TextFormatter{ForceColors: true})

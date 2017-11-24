@@ -7,8 +7,8 @@ import (
 	"github.com/gogits/go-gogs-client"
 
 	"encoding/json"
-	"github.com/G-Node/gig"
 	"bytes"
+	"net/http/httptest"
 )
 
 // Handler for Index requests
@@ -71,6 +71,36 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSer
 	w.WriteHeader(http.StatusOK)
 	w.Write(data)
 }
+
+func ReindexH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinServer, rpath *string) {
+	rbd := IndexRequest{}
+	getParsedBody(r, &rbd)
+	repos, err := findRepos(*rpath, &rbd, gins)
+	if err != nil {
+		log.Debugf("failed listing repositories: %+v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	rec := httptest.NewRecorder()
+	for _, repo := range repos {
+		ireq := IndexRequest{rbd.Token, rbd.CsrfT, rbd.UserID, repo.FullName,
+			fmt.Sprintf("%d", repo.ID)}
+		data, _ := json.Marshal(ireq)
+		req, _ := http.NewRequest(http.MethodPost, "/index", bytes.NewReader(data))
+		IndexH(rec, req, els, rpath)
+		if rec.Code != http.StatusOK {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+
 
 func searchNamedIndex(querry, index string, okRepids []string, els *ElServer,
 	result interface{}) error {
