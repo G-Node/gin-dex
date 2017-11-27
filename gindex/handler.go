@@ -28,6 +28,7 @@ func IndexH(w http.ResponseWriter, r *http.Request, els *ElServer, rpath *string
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+	return
 }
 
 // Handler for Search requests

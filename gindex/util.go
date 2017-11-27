@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"crypto/sha1"
 )
 
 func getParsedBody(r *http.Request, obj interface{}) error {
@@ -98,4 +99,8 @@ func hasRepoAccess(repository *gig.Repository, rbd *ReIndexRequest, gins *GinSer
 		return nil, err
 	}
 	return &gRepo, nil
+}
+
+func GetIndexCommitId(id, repoid string) gig.SHA1 {
+	return sha1.Sum([]byte(repoid + id))
 }

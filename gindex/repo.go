@@ -14,7 +14,7 @@ func IndexRepoWithPath(path, ref string, serv *ElServer, repoid string) error {
 	}
 	log.Debugf("Opened repository")
 	commits, err := rep.WalkRef(ref, func(comitID gig.SHA1) bool {
-		res, err := serv.HasCommit("commits", comitID)
+		res, err := serv.HasCommit("commits", GetIndexCommitId(comitID.String(), repoid))
 		if err != nil {
 			log.Errorf("Could not querry commit index: %v", err)
 			return false
@@ -42,6 +42,8 @@ func IndexRepoWithPath(path, ref string, serv *ElServer, repoid string) error {
 				if err != nil {
 					log.Debugf("Indexing blob failed: %+v", err)
 				}
+			} else {
+				log.Debugf("Blob there :%s", blid)
 			}
 		}
 	}

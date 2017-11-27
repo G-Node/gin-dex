@@ -55,7 +55,7 @@ func (c *IndexCommit) AddToIndex(server *ElServer, index string, id gig.SHA1) er
 	if err != nil {
 		return err
 	}
-	indexid := sha1.Sum([]byte(c.GinRepoId + id.String()))
+	indexid := GetIndexCommitId(id.String(), c.GinRepoId)
 	err = AddToIndex(data, server, index, "commit", indexid)
 	return err
 }

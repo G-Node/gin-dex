@@ -18,7 +18,6 @@ const (
 )
 
 func DetermineFileType(peekData []byte) (int64, error) {
-	logrus.Debugf("Peaked at: %s", string(peekData))
 	if tool.IsAnnexedFile(peekData){
 		logrus.Debugf("Found an annex file")
 		return ANNEX,nil

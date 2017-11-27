@@ -25,7 +25,6 @@ func NewElServer(adress string, uname, password *string) *ElServer {
 
 func (el *ElServer) Index(index, doctype string, data []byte, id gig.SHA1) (*http.Response, error) {
 	adrr := fmt.Sprintf("%s/%s/%s/%s", el.adress, index, doctype, id.String())
-	log.Debugf("Indexing this:%s", string(data))
 	req, err := http.NewRequest("POST", adrr, bytes.NewReader(data))
 	if err != nil {
 		return nil, err
@@ -39,7 +38,6 @@ func (el *ElServer) elasticRequest(req *http.Request) (*http.Response, error) {
 	}
 	req.Header.Set("Content-Type", "application/json")
 	cl := http.Client{}
-	log.Debugf("Indexing request:%+v", req)
 	return cl.Do(req)
 }
 
