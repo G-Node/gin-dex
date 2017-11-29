@@ -67,6 +67,18 @@ func (bl *IndexBlob) ToJson() ([]byte, error) {
 	return json.Marshal(bl)
 }
 
+func (bl *IndexBlob) AddToIndexTimeout(server *ElServer, index, repopath string, id gig.SHA1, timeout int64) error {
+	err := make(chan error)
+	defer close(err)
+	go func() { err <- bl.AddToIndex(server, index, repopath, id) }()
+	select {
+	case res := <-err:
+		return res
+	case <-time.After(time.Duration(timeout) * time.Second):
+		return fmt.Errorf("timed out:%s,%v", repopath, bl)
+	}
+}
+
 func (bl *IndexBlob) AddToIndex(server *ElServer, index, repopath string, id gig.SHA1) error {
 	indexid := GetIndexCommitId(id.String(), bl.GinRepoId)
 	f_type, blobBuffer, err := BlobFileType(bl)

@@ -13,6 +13,7 @@ type IndexRequest struct {
 	RepoID   string
 }
 
+
 type ReIndexRequest struct {
 	*IndexRequest
 	Token string
@@ -43,4 +44,5 @@ type SearchResults struct {
 var Setting struct {
 	TxtMSize int64
 	PdfMSize int64
+	Timeout  int64
 }

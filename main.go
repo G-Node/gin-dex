@@ -13,7 +13,7 @@ import (
 func main() {
 	usage := `gin-dex.
 Usage:
-  gin-dex [--eladress=<eladress> --eluser=<eluser> --elpw=<elpw> --rpath=<rpath> --gin=<gin> --port=<port> --txtMSize=<txtMSize> --pdfMSize=<[pdfMSize> --debug ]
+  gin-dex [--eladress=<eladress> --eluser=<eluser> --elpw=<elpw> --rpath=<rpath> --gin=<gin> --port=<port> --txtMSize=<txtMSize> --pdfMSize=<pdfMSize> --timeout=<timeout> --debug ]
 
 Options:
   --eladress=<eladress>           Adress of the elastic server [default: http://localhost:9200]
@@ -24,6 +24,7 @@ Options:
   --rpath=<rpath>                 Path to the repositories [default: /repos]
   --txtMSize=<txtMSize>           Maximum text file size [default: 10]
   --pdfMSize=<pdfMSize>           Maximum pdf file size [default: 100]
+  --timeout=<timeout>             Default timeout for indexing operation [default: 60]
   --debug                         Whether debug messages shall be printed
 
  `
@@ -54,6 +55,12 @@ Options:
 	pdfMs, _ := strconv.ParseInt(args["--pdfMSize"].(string), 10, 0)
 	gindex.Setting.TxtMSize = txtMs
 	gindex.Setting.PdfMSize = pdfMs
+
+	to, err := strconv.ParseInt(args["--txtMSize"].(string), 10, 0)
+	gindex.Setting.Timeout = 60
+	if err == nil {
+		gindex.Setting.Timeout = to
+	}
 
 	if args["--debug"].(bool) {
 		log.SetLevel(log.DebugLevel)
