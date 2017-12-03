@@ -51,9 +51,7 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSer
 	err = getParsedHttpCall(http.MethodGet, fmt.Sprintf("%s/api/v1/user/repos", gins.URL),
 		nil, rbd.Token, rbd.CsrfT, &repos)
 	if err != nil {
-		log.Errorf("could not querry repos: %+v", err)
-		w.WriteHeader(http.StatusUnauthorized)
-		return
+		log.Infof("could not querry user repos: %+v", err)
 	}
 	// Get repos ids for public repos
 	prepos := struct{ Data []gogs.Repository }{}
@@ -61,7 +59,7 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSer
 		nil, rbd.Token, rbd.CsrfT, &prepos)
 	if err != nil {
 		log.Errorf("could not querry public repos: %+v", err)
-		w.WriteHeader(http.StatusUnauthorized)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	repos = append(repos, prepos.Data...)
