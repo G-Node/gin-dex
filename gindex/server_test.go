@@ -1,4 +1,4 @@
-	package gindex
+package gindex
 
 import (
 	"testing"

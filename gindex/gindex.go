@@ -1,10 +1,16 @@
 package gindex
 
+const (
+	SEARCH_MATCH = 0
+	SEARCH_FUZZY = 1
+	SEARCH_WILDCARD = 2
+)
 type SearchRequest struct {
 	Token  string
 	CsrfT  string
 	UserID int64
 	Querry string
+	SType  int64
 }
 
 type IndexRequest struct {

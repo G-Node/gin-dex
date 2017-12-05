@@ -71,7 +71,7 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSer
 	log.Debugf("Repod to search in:%+v", repids)
 	// Lets search now
 	rBlobs := [] BlobSResult{}
-	err = searchBlobs(rbd.Querry, repids, els, &rBlobs)
+	err = searchBlobs(rbd.Querry, rbd.SType, repids, els, &rBlobs)
 	if err != nil {
 		log.Warnf("could not search blobs:%+v", err)
 	}
@@ -154,9 +154,9 @@ func searchCommits(querry string, okRepids []string, els *ElServer,
 	return nil
 }
 
-func searchBlobs(querry string, okRepids []string, els *ElServer,
+func searchBlobs(querry string, searchType int64, okRepids []string, els *ElServer,
 	result interface{}) error {
-	blobS, err := els.SearchBlobs(querry, okRepids)
+	blobS, err := els.SearchBlobs(querry, okRepids, searchType)
 	if err != nil {
 		return err
 	}

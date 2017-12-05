@@ -11,6 +11,7 @@ import (
 
 	"github.com/G-Node/gig"
 	log "github.com/Sirupsen/logrus"
+	"strings"
 )
 
 type ElServer struct {
@@ -86,14 +87,23 @@ func (el *ElServer) search(querry, adrr string) (*http.Response, error) {
 	return el.elasticRequest(req)
 }
 
-func (el *ElServer) SearchBlobs(querry string, okRepos []string) (*http.Response, error) {
+func (el *ElServer) SearchBlobs(querry string, okRepos []string, searchType int64) (*http.Response, error) {
 	//implement the passing of the repo ids
 	repos, err := json.Marshal(okRepos)
 	if err != nil {
 		log.Errorf("Could not marshal okRepos: %+v", err)
 		return nil, err
 	}
-	formatted_querry := fmt.Sprintf(BLOB_QUERRY, querry, string(repos))
+	var formatted_querry string
+	switch searchType {
+	case SEARCH_FUZZY:
+		formatted_querry = fmt.Sprintf(BLOB_FUZ_QUERRY, querry, string(repos))
+	case SEARCH_WILDCARD:
+		formatted_querry = fmt.Sprintf(BLOB_WC_QUERRY, strings.ToLower(querry), string(repos))
+	default:
+		formatted_querry = fmt.Sprintf(BLOB_QUERRY, querry, string(repos))
+	}
+
 	adrr := fmt.Sprintf("%s/%s/_search", el.adress, BLOB_INDEX)
 	return el.search(formatted_querry, adrr)
 }
@@ -125,6 +135,70 @@ var BLOB_QUERRY = `{
 			  "GinRepoId" : %s
 			}
 		  }
+		}
+	},
+	"highlight" : {
+		"fields" : [
+			{"Content" : {
+				"fragment_size" : 100,
+				"number_of_fragments" : 10,
+				"fragmenter": "span",
+				"require_field_match":false,
+				"pre_tags" : ["<b>"],
+				"post_tags" : ["</b>"]
+				}
+			}
+		]
+	}
+}`
+
+var BLOB_FUZ_QUERRY = `{
+	"from" : 0, "size" : 20,
+	  "_source": ["Oid","GinRepoName","FirstCommit","Path"],
+	  "query": {
+		"bool": {
+		  "must": {
+			"fuzzy": {
+				"_all":"%s"
+			}
+		  },
+		  "filter": {
+			"terms": {
+				"GinRepoId" : %s
+			}
+		}
+		}
+	},
+	"highlight" : {
+		"fields" : [
+			{"Content" : {
+				"fragment_size" : 100,
+				"number_of_fragments" : 10,
+				"fragmenter": "span",
+				"require_field_match":false,
+				"pre_tags" : ["<b>"],
+				"post_tags" : ["</b>"]
+				}
+			}
+		]
+	}
+}`
+
+var BLOB_WC_QUERRY = `{
+	"from" : 0, "size" : 20,
+	  "_source": ["Oid","GinRepoName","FirstCommit","Path"],
+	  "query": {
+		"bool": {
+		  "must": {
+			"wildcard": {
+				"_all":"%s"
+			}
+		  },
+		  "filter": {
+			"terms": {
+				"GinRepoId" : %s
+			}
+		}
 		}
 	},
 	"highlight" : {
