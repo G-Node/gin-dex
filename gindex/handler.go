@@ -184,5 +184,5 @@ func parseElResult(comS *http.Response, pRes interface{}) error {
 			return err
 		}
 	}
-	return fmt.Errorf("could not extract elastic result")
+	return fmt.Errorf("could not extract elastic result:%s", res)
 }

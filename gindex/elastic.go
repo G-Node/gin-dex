@@ -100,6 +100,8 @@ func (el *ElServer) SearchBlobs(querry string, okRepos []string, searchType int6
 		formatted_querry = fmt.Sprintf(BLOB_FUZ_QUERRY, querry, string(repos))
 	case SEARCH_WILDCARD:
 		formatted_querry = fmt.Sprintf(BLOB_WC_QUERRY, strings.ToLower(querry), string(repos))
+	case SEARCH_QUERRY:
+		formatted_querry = fmt.Sprintf(BLOB_QString_QUERRY, strings.ToLower(querry), string(repos))
 	default:
 		formatted_querry = fmt.Sprintf(BLOB_QUERRY, querry, string(repos))
 	}
@@ -192,6 +194,39 @@ var BLOB_WC_QUERRY = `{
 		  "must": {
 			"wildcard": {
 				"_all":"%s"
+			}
+		  },
+		  "filter": {
+			"terms": {
+				"GinRepoId" : %s
+			}
+		}
+		}
+	},
+	"highlight" : {
+		"fields" : [
+			{"Content" : {
+				"fragment_size" : 100,
+				"number_of_fragments" : 10,
+				"fragmenter": "span",
+				"require_field_match":false,
+				"pre_tags" : ["<b>"],
+				"post_tags" : ["</b>"]
+				}
+			}
+		]
+	}
+}`
+
+var BLOB_QString_QUERRY = `{
+	"from" : 0, "size" : 20,
+	  "_source": ["Oid","GinRepoName","FirstCommit","Path"],
+	  "query": {
+		"bool": {
+		  "must": {
+			"query_string": {
+				"default_field" : "Content",
+				"query":"%s"
 			}
 		  },
 		  "filter": {

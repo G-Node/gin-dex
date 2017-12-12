@@ -1,9 +1,10 @@
 package gindex
 
 const (
-	SEARCH_MATCH = 0
-	SEARCH_FUZZY = 1
-	SEARCH_WILDCARD = 2
+	SEARCH_MATCH    = iota
+	SEARCH_FUZZY
+	SEARCH_WILDCARD
+	SEARCH_QUERRY
 )
 type SearchRequest struct {
 	Token  string
