@@ -101,7 +101,7 @@ func (el *ElServer) SearchBlobs(querry string, okRepos []string, searchType int6
 	case SEARCH_WILDCARD:
 		formatted_querry = fmt.Sprintf(BLOB_WC_QUERRY, strings.ToLower(querry), string(repos))
 	case SEARCH_QUERRY:
-		formatted_querry = fmt.Sprintf(BLOB_QString_QUERRY, strings.ToLower(querry), string(repos))
+		formatted_querry = fmt.Sprintf(BLOB_QString_QUERRY, querry, string(repos))
 	default:
 		formatted_querry = fmt.Sprintf(BLOB_QUERRY, querry, string(repos))
 	}
