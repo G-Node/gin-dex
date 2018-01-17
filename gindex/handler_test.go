@@ -12,7 +12,7 @@ import (
 
 func TestIndexHandler(t *testing.T) {
 	log.SetLevel(log.ErrorLevel)
-	rbd := IndexRequest{Token: "testtoken", UserID: 10, RepoPath: "repo2.git",
+	rbd := IndexRequest{UserID: 10, RepoPath: "repo2.git",
 		RepoID: "repo2.git"}
 	data, err := json.Marshal(rbd)
 	if err != nil {
