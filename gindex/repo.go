@@ -76,8 +76,7 @@ func indexCommit(commit *gig.Commit, repoid string, commitid gig.SHA1, rep *gig.
 		}
 		if !hasBlob {
 			bpath, _ := GetBlobPath(blid.String(), commitid.String(), path)
-			err = NewBlobFromGig(blob, repoid, blid, commitid.String(), bpath, reponame).AddToIndexTimeout(serv,
-				"blobs", path, blid, Setting.Timeout)
+			err = NewBlobFromGig(blob, repoid, blid, commitid.String(), bpath, reponame).AddToIndexTimeout(serv, path, blid, Setting.Timeout)
 			if err != nil {
 				log.Debugf("Indexing blob failed: %+v", err)
 			}

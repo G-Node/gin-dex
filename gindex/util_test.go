@@ -11,7 +11,7 @@ import (
 
 func TestHasRepoAccess(t *testing.T) {
 	log.SetLevel(log.ErrorLevel)
-	rbd := IndexRequest{Token: "", CsrfT: ""}
+	rbd := ReIndexRequest{}
 	gRepo := gig.Repository{Path: "/home/test/bla/franz/repo1"}
 	ts := makeFakeUtilServer()
 	repo, err := hasRepoAccess(&gRepo, &rbd, &GinServer{URL: ts.URL})
@@ -26,7 +26,7 @@ func TestHasRepoAccess(t *testing.T) {
 
 func TestFindRepos(t *testing.T) {
 	log.SetLevel(log.ErrorLevel)
-	rbd := IndexRequest{Token: "", CsrfT: ""}
+	rbd := ReIndexRequest{Token: "", CsrfT: ""}
 	ts := makeFakeUtilServer()
 	repos, err := findRepos("../tdata", &rbd, &GinServer{URL: ts.URL})
 	if err != nil {

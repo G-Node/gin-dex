@@ -67,10 +67,10 @@ func (bl *IndexBlob) ToJson() ([]byte, error) {
 	return json.Marshal(bl)
 }
 
-func (bl *IndexBlob) AddToIndexTimeout(server *ElServer, index, repopath string, id gig.SHA1, timeout int64) error {
+func (bl *IndexBlob) AddToIndexTimeout(server *ElServer, repopath string, id gig.SHA1, timeout int64) error {
 	err := make(chan error)
 	defer close(err)
-	go func() { err <- bl.AddToIndex(server, index, repopath, id) }()
+	go func() { err <- bl.AddToIndex(server, repopath, id) }()
 	select {
 	case res := <-err:
 		return res
@@ -79,7 +79,7 @@ func (bl *IndexBlob) AddToIndexTimeout(server *ElServer, index, repopath string,
 	}
 }
 
-func (bl *IndexBlob) AddToIndex(server *ElServer, index, repopath string, id gig.SHA1) error {
+func (bl *IndexBlob) AddToIndex(server *ElServer, repopath string, id gig.SHA1) error {
 	indexid := GetIndexCommitId(id.String(), bl.GinRepoId)
 	f_type, blobBuffer, err := BlobFileType(bl)
 	if err != nil {
@@ -106,7 +106,7 @@ func (bl *IndexBlob) AddToIndex(server *ElServer, index, repopath string, id gig
 		}
 		defer fp.Close()
 		bl.Blob = gig.MakeAnnexBlob(fp, Afile.Info.Size())
-		return bl.AddToIndex(server, index, repopath, id)
+		return bl.AddToIndex(server, repopath, id)
 
 	case TEXT:
 		if bl.Size() > gannex.MEGABYTE*Setting.TxtMSize {
@@ -148,7 +148,7 @@ func (bl *IndexBlob) AddToIndex(server *ElServer, index, repopath string, id gig
 	if err != nil {
 		return err
 	}
-	err = AddToIndex(data, server, index, "blob", indexid)
+	err = AddToIndex(data, server, server.blindex, "blob", indexid)
 	return err
 }
 

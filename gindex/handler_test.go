@@ -12,6 +12,7 @@ import (
 
 func TestIndexHandler(t *testing.T) {
 	log.SetLevel(log.ErrorLevel)
+	Setting.Timeout = 10
 	rbd := IndexRequest{UserID: 10, RepoPath: "repo2.git",
 		RepoID: "repo2.git"}
 	data, err := json.Marshal(rbd)

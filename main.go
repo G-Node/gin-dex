@@ -13,10 +13,12 @@ import (
 func main() {
 	usage := `gin-dex.
 Usage:
-  gin-dex [--eladress=<eladress> --eluser=<eluser> --elpw=<elpw> --rpath=<rpath> --gin=<gin> --port=<port> --txtMSize=<txtMSize> --pdfMSize=<pdfMSize> --timeout=<timeout> --debug ]
+  gin-dex [--eladress=<eladress> --elblindex=<elblindex> --elcoindex=<elcoindex> --eluser=<eluser> --elpw=<elpw> --rpath=<rpath> --gin=<gin> --port=<port> --txtMSize=<txtMSize> --pdfMSize=<pdfMSize> --timeout=<timeout> --debug ]
 
 Options:
   --eladress=<eladress>           Adress of the elastic server [default: http://localhost:9200]
+  --elblindex=<elblindex>         Blob index [default: blobs]
+  --elcoindex=<elcoindex>         Commit index [default: commits]
   --eluser=<eluser>               Elastic user [default: elastic]
   --elpw=<elpw>                   Elastic password [default: changeme]
   --port=<port>                   Server port [default: 8099]
@@ -35,7 +37,9 @@ Options:
 	}
 	uname := args["--eluser"].(string)
 	pw := args["--elpw"].(string)
-	els := gindex.NewElServer(args["--eladress"].(string), &uname, &pw)
+	els := gindex.NewElServer(args["--eladress"].(string), args["--elblindex"].(string), args["--elcoindex"].(string),
+		&uname, &pw)
+	els.Init()
 	gin := &gindex.GinServer{URL: args["--gin"].(string)}
 	rpath := args["--rpath"].(string)
 

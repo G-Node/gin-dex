@@ -18,15 +18,43 @@ type ElServer struct {
 	adress   string
 	uname    *string
 	password *string
+	blindex  string
+	coindex  string
 }
 
-const (
-	BLOB_INDEX   = "blobs"
-	COMMIT_INDEX = "commits"
-)
+func NewElServer(adress, blindex, coindex string, uname, password *string) *ElServer {
+	return &ElServer{adress: adress, uname: uname, password: password, blindex: blindex, coindex: coindex}
+}
 
-func NewElServer(adress string, uname, password *string) *ElServer {
-	return &ElServer{adress: adress, uname: uname, password: password}
+func (el *ElServer) Init() error {
+	// create Blob mapping
+	adrr := fmt.Sprintf("%s/%s/", el.adress, el.blindex)
+	req, err := http.NewRequest("PUT", adrr, bytes.NewReader([]byte(BLOB_MAPPING)))
+	if err != nil {
+		return err
+	}
+	resp, err := el.elasticRequest(req)
+	if err != nil {
+		return err
+	} else if resp.StatusCode != http.StatusOK {
+		data, _ := ioutil.ReadAll(resp.Body)
+		log.Infof("Blob Mapping not created:%d, %s", resp.StatusCode, data)
+	}
+
+	// create Commit mapping
+	adrr = fmt.Sprintf("%s/%s/", el.adress, el.coindex)
+	req, err = http.NewRequest("PUT", adrr, bytes.NewReader([]byte(COMMIT_MAPPING)))
+	if err != nil {
+		return err
+	}
+	resp, err = el.elasticRequest(req)
+	if err != nil {
+		return err
+	} else if resp.StatusCode != http.StatusOK {
+		data, _ := ioutil.ReadAll(resp.Body)
+		log.Infof("Commit Mapping not created:%d, %s", resp.StatusCode, data)
+	}
+	return nil
 }
 
 func (el *ElServer) Index(index, doctype string, data []byte, id gig.SHA1) (*http.Response, error) {
@@ -48,12 +76,12 @@ func (el *ElServer) elasticRequest(req *http.Request) (*http.Response, error) {
 }
 
 func (el *ElServer) HasCommit(index string, commitId gig.SHA1) (bool, error) {
-	adrr := fmt.Sprintf("%s/commits/commit/%s", el.adress, commitId)
+	adrr := fmt.Sprintf("%s/%s/commit/%s", el.adress, el.coindex, commitId)
 	return el.Has(adrr)
 }
 
 func (el *ElServer) HasBlob(index string, blobId gig.SHA1) (bool, error) {
-	adrr := fmt.Sprintf("%s/blobs/blob/%s", el.adress, blobId)
+	adrr := fmt.Sprintf("%s/%s/blob/%s", el.adress, el.blindex, blobId)
 	return el.Has(adrr)
 }
 
@@ -106,7 +134,7 @@ func (el *ElServer) SearchBlobs(querry string, okRepos []string, searchType int6
 		formatted_querry = fmt.Sprintf(BLOB_QUERRY, querry, string(repos))
 	}
 
-	adrr := fmt.Sprintf("%s/%s/_search", el.adress, BLOB_INDEX)
+	adrr := fmt.Sprintf("%s/%s/_search", el.adress, el.blindex)
 	return el.search(formatted_querry, adrr)
 }
 
@@ -118,7 +146,7 @@ func (el *ElServer) SearchCommits(querry string, okRepos []string) (*http.Respon
 		return nil, err
 	}
 	formatted_querry := fmt.Sprintf(COMMIT_QUERRY, querry, string(repos))
-	adrr := fmt.Sprintf("%s/%s/_search", el.adress, COMMIT_INDEX)
+	adrr := fmt.Sprintf("%s/%s/_search", el.adress, el.coindex)
 	return el.search(formatted_querry, adrr)
 }
 
@@ -290,4 +318,183 @@ var COMMIT_QUERRY = `{
 			}
 		]
 	}
+}`
+
+var BLOB_MAPPING = `{
+  "mappings": {
+    "blob": {
+      "_all": {
+        "enabled": true
+      },
+      "properties": {
+        "Content": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "FirstCommit": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "GinRepoId": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "GinRepoName": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "Id": {
+          "type": "long"
+        },
+        "IndexingTime": {
+          "type": "date"
+        },
+        "Oid": {
+          "type": "long"
+        },
+        "Path": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        }
+      }
+    }
+  }
+}`
+
+var COMMIT_MAPPING = `{
+  "mappings": {
+    "commit": {
+      "properties": {
+        "Author": {
+          "properties": {
+            "Date": {
+              "type": "date"
+            },
+            "Email": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            },
+            "Name": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            },
+            "Offset": {
+              "type": "object"
+            }
+          }
+        },
+        "Committer": {
+          "properties": {
+            "Date": {
+              "type": "date"
+            },
+            "Email": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            },
+            "Name": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            },
+            "Offset": {
+              "type": "object"
+            }
+          }
+        },
+        "GPGSig": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "GinRepoId": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "GinRepoName": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "IndexingTime": {
+          "type": "date"
+        },
+        "Message": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "Oid": {
+          "type": "long"
+        },
+        "Parent": {
+          "type": "long"
+        },
+        "Tree": {
+          "type": "long"
+        }
+      }
+    }
+  }
 }`
