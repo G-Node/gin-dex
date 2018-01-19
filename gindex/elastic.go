@@ -320,6 +320,37 @@ var COMMIT_QUERRY = `{
 	}
 }`
 
+var SUGGEST_QUERRY = `{
+  "from": 0,
+  "size": 20,
+  "_source": [
+    ""
+  ],
+  "query": {
+    "bool": {
+      "must": {
+        "match_phrase_prefix": {
+          "Content": {
+            "query": "%s",
+            "max_expansions": 10
+          }
+        }
+      },
+      "filter": {
+        "terms": {
+          "GinRepoId": "%s"
+        }
+      }
+    }
+  },
+  "highlight": {
+    "fields": {
+      "Content": {}
+    },
+    "boundary_scanner": "word"
+  }
+}`
+
 var BLOB_MAPPING = `{
   "mappings": {
     "blob": {
