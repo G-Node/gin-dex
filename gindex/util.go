@@ -190,3 +190,44 @@ func GetNevComments(blobBuf *bufio.Reader) (*string, error) {
 	return &comment, nil
 
 }
+
+func getOkRepoIds(rbd *SearchRequest, gins *GinServer) ([]string, error) {
+	repos := []gogs.Repository{}
+	if rbd.UserID > -10 {
+		err := getParsedHttpCall(http.MethodGet, fmt.Sprintf("%s/api/v1/user/repos", gins.URL),
+			nil, rbd.Token, rbd.CsrfT, &repos)
+		if err != nil {
+			log.Infof("could not querry user repos: %+v", err)
+		}
+	}
+
+	// Get repos ids for public repos
+	prepos := struct{ Data []gogs.Repository }{}
+	err := getParsedHttpCall(http.MethodGet, fmt.Sprintf("%s/api/v1/repos/search/?limit=10000", gins.URL),
+		nil, rbd.Token, rbd.CsrfT, &prepos)
+	if err != nil {
+		log.Errorf("could not querry public repos: %+v", err)
+		return nil, err
+	}
+	repos = append(repos, prepos.Data...)
+
+	repids := make([]string, len(repos))
+	for c, repo := range repos {
+		repids[c] = fmt.Sprintf("%d", repo.ID)
+	}
+	return repids, nil
+}
+
+func UniqueStr(in []string) []string {
+	tmpM := make(map[string]struct{})
+	for _, data := range in {
+		tmpM[data] = struct{}{}
+	}
+	out := make([]string, len(tmpM))
+	i := 0
+	for key, _ := range tmpM {
+		out[i] = key
+		i++
+	}
+	return out
+}

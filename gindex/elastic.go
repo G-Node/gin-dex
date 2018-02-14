@@ -150,6 +150,18 @@ func (el *ElServer) SearchCommits(querry string, okRepos []string) (*http.Respon
 	return el.search(formatted_querry, adrr)
 }
 
+func (el *ElServer) Suggest(querry string, okRepos []string) (*http.Response, error) {
+	//implement the passing of the repo ids
+	repos, err := json.Marshal(okRepos)
+	if err != nil {
+		log.Errorf("Could not marshal okRepos: %+v", err)
+		return nil, err
+	}
+	formatted_querry := fmt.Sprintf(SUGGEST_QUERRY, querry, string(repos))
+	adrr := fmt.Sprintf("%s/%s/_search", el.adress, el.blindex)
+	return el.search(formatted_querry, adrr)
+}
+
 var BLOB_QUERRY = `{
 	"from" : 0, "size" : 20,
 	  "_source": ["Oid","GinRepoName","FirstCommit","Path"],
@@ -338,7 +350,7 @@ var SUGGEST_QUERRY = `{
       },
       "filter": {
         "terms": {
-          "GinRepoId": "%s"
+          "GinRepoId": %s
         }
       }
     }

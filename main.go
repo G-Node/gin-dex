@@ -51,6 +51,10 @@ Options:
 		gindex.SearchH(w, r, els, gin)
 	})
 
+	http.HandleFunc("/suggest", func(w http.ResponseWriter, r *http.Request) {
+		gindex.SuggestH(w, r, els, gin)
+	})
+
 	http.HandleFunc("/reindex", func(w http.ResponseWriter, r *http.Request) {
 		gindex.ReindexH(w, r, els, gin, &rpath)
 	})

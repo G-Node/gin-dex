@@ -53,3 +53,5 @@ var Setting struct {
 	PdfMSize int64
 	Timeout  int64
 }
+
+type Suggestions []string

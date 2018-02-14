@@ -4,13 +4,13 @@ import (
 	"net/http"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
-	"github.com/gogits/go-gogs-client"
-
 	"encoding/json"
 	"bytes"
 	"net/http/httptest"
 	"strings"
 	"sync"
+	"io/ioutil"
+	"regexp"
 )
 
 // Handler for Index requests
@@ -45,31 +45,10 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSer
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	// Get repo ids from the gin server to which the user has access
-	// we need to limit results to those
-	repos := []gogs.Repository{}
-	if rbd.UserID > -10 {
-		err = getParsedHttpCall(http.MethodGet, fmt.Sprintf("%s/api/v1/user/repos", gins.URL),
-		nil, rbd.Token, rbd.CsrfT, &repos)
-		if err != nil {
-			log.Infof("could not querry user repos: %+v", err)
-		}
-	}
-
-	// Get repos ids for public repos
-	prepos := struct{ Data []gogs.Repository }{}
-	err = getParsedHttpCall(http.MethodGet, fmt.Sprintf("%s/api/v1/repos/search/?limit=10000", gins.URL),
-		nil, rbd.Token, rbd.CsrfT, &prepos)
+	repids, err := getOkRepoIds(&rbd, gins)
 	if err != nil {
-		log.Errorf("could not querry public repos: %+v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	}
-	repos = append(repos, prepos.Data...)
-
-	repids := make([]string, len(repos))
-	for c, repo := range repos {
-		repids[c] = fmt.Sprintf("%d", repo.ID)
 	}
 	log.Debugf("Repod to search in:%+v", repids)
 	// Lets search now
@@ -91,6 +70,34 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSer
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Write(data)
+}
+
+func SuggestH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinServer) {
+	rbd := SearchRequest{}
+	err := getParsedBody(r, &rbd)
+	log.Debugf("got a search request:%+v", rbd)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	repids, err := getOkRepoIds(&rbd, gins)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	log.Debugf("Repod to search in:%+v", repids)
+	// Lets search now
+	suggestions, err := suggest(rbd.Querry, repids, els)
+	if err != nil {
+		log.Warnf("could not search blobs:%+v", err)
+	}
+	suggestionsJ, err := json.Marshal(suggestions)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(suggestionsJ)
 }
 
 // Handler for Index requests
@@ -141,6 +148,28 @@ func ReindexH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSe
 	}
 	wg.Wait()
 	w.WriteHeader(http.StatusOK)
+}
+
+func suggest(querry string, okRepids []string, els *ElServer) ([]string, error) {
+	commS, err := els.Suggest(querry, okRepids)
+	defer commS.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+	data, err := ioutil.ReadAll(commS.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	re := regexp.MustCompile(`<em>(\w+)</em>`)
+	sdata := string(data)
+	matches := re.FindAllStringSubmatch(string(sdata), -1)
+	result := make([]string, len(matches))
+	for i, match := range matches {
+		result[i] = match[1]
+	}
+	result = UniqueStr(result)
+	return result, nil
 }
 
 func searchCommits(querry string, okRepids []string, els *ElServer,
