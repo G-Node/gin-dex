@@ -51,6 +51,24 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSer
 		return
 	}
 	log.Debugf("Repod to search in:%+v", repids)
+	if rbd.SType==SEARCH_SUGGEST{
+		suggestions, err := suggest(rbd.Querry, repids, els)
+		if err != nil {
+			log.Warnf("could not search blobs:%+v", err)
+		}
+		result := []Suggestion{}
+		for _, suf := range suggestions {
+			result = append(result, Suggestion{Title: suf})
+		}
+		suggestionsJ, err := json.Marshal(Suggestions{Items: result})
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write(suggestionsJ)
+		return
+	}
 	// Lets search now
 	rBlobs := [] BlobSResult{}
 	err = searchBlobs(rbd.Querry, rbd.SType, repids, els, &rBlobs)

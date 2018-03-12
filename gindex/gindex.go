@@ -5,6 +5,7 @@ const (
 	SEARCH_FUZZY
 	SEARCH_WILDCARD
 	SEARCH_QUERRY
+	SEARCH_SUGGEST
 )
 type SearchRequest struct {
 	Token  string
@@ -54,4 +55,11 @@ var Setting struct {
 	Timeout  int64
 }
 
-type Suggestions []string
+type Suggestions struct {
+	Items []Suggestion
+}
+
+type Suggestion struct {
+	Title string
+	Url string
+}
