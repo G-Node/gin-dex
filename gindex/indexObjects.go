@@ -2,13 +2,13 @@ package gindex
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"time"
 
 	"github.com/G-Node/gig"
-	log "github.com/Sirupsen/logrus"
 	"github.com/G-Node/go-annex"
-	"fmt"
+	log "github.com/sirupsen/logrus"
 )
 
 type IndexBlob struct {
@@ -142,7 +142,6 @@ func (bl *IndexBlob) AddToIndex(server *ElServer, repopath string, id gig.SHA1) 
 		}
 		bl.Content = *com
 	}
-
 
 	data, err := bl.ToJson()
 	if err != nil {

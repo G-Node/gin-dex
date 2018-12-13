@@ -3,10 +3,10 @@ package gindex
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
-	log "github.com/Sirupsen/logrus"
-	"strings"
+	log "github.com/sirupsen/logrus"
 )
 
 func TestRepoIndexing(t *testing.T) {
@@ -15,11 +15,11 @@ func TestRepoIndexing(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Did receive the following:%v", r)
 		requests = append(requests, *r)
-		if (r.Method == http.MethodGet && strings.Contains(r.URL.Path, "commits")) {
+		if r.Method == http.MethodGet && strings.Contains(r.URL.Path, "commits") {
 			log.Printf("Need to reply with found")
 			w.Write([]byte(`{"found": false}`))
 		}
-		if (r.Method == http.MethodGet && strings.Contains(r.URL.Path, "blobs")) {
+		if r.Method == http.MethodGet && strings.Contains(r.URL.Path, "blobs") {
 			log.Printf("Need to reply with found")
 			w.Write([]byte(`{"found": false}`))
 		}
@@ -37,17 +37,17 @@ func TestAnnexIndexing(t *testing.T) {
 	log.SetLevel(log.ErrorLevel)
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Did receive the following:%v", r)
-		if (r.Method == http.MethodGet && strings.Contains(r.URL.Path, "commits")) {
+		if r.Method == http.MethodGet && strings.Contains(r.URL.Path, "commits") {
 			log.Printf("Need to reply with found")
 			w.Write([]byte(`{"found": false}`))
 		}
-		if (r.Method == http.MethodGet && strings.Contains(r.URL.Path, "blobs")) {
+		if r.Method == http.MethodGet && strings.Contains(r.URL.Path, "blobs") {
 			log.Printf("Need to reply with found")
 			w.Write([]byte(`{"found": false}`))
 		}
 
-		if (r.Method == http.MethodPost && strings.Contains(r.URL.Path, "blob/f78b7903bd67c78a98ccd4deffd3904dc0a3b431")) {
-			if (r.ContentLength == 150) {
+		if r.Method == http.MethodPost && strings.Contains(r.URL.Path, "blob/f78b7903bd67c78a98ccd4deffd3904dc0a3b431") {
+			if r.ContentLength == 150 {
 				w.WriteHeader(http.StatusOK)
 			} else {
 				w.WriteHeader(http.StatusBadRequest)

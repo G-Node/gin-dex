@@ -1,14 +1,14 @@
 package main
 
 import (
-	"github.com/docopt/docopt-go"
-	"os"
-	"github.com/G-Node/gin-dex/gindex"
 	"net/http"
-	log  "github.com/Sirupsen/logrus"
+	"os"
 	"strconv"
-)
 
+	"github.com/G-Node/gin-dex/gindex"
+	"github.com/docopt/docopt-go"
+	log "github.com/sirupsen/logrus"
+)
 
 func main() {
 	usage := `gin-dex.

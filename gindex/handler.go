@@ -1,16 +1,17 @@
 package gindex
 
 import (
-	"net/http"
-	"fmt"
-	log "github.com/Sirupsen/logrus"
-	"encoding/json"
 	"bytes"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"strings"
 	"sync"
-	"io/ioutil"
-	"regexp"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Handler for Index requests
@@ -51,7 +52,7 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSer
 		return
 	}
 	log.Debugf("Repod to search in:%+v", repids)
-	if rbd.SType==SEARCH_SUGGEST{
+	if rbd.SType == SEARCH_SUGGEST {
 		suggestions, err := suggest(rbd.Querry, repids, els)
 		if err != nil {
 			log.Warnf("could not search blobs:%+v", err)
@@ -70,12 +71,12 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSer
 		return
 	}
 	// Lets search now
-	rBlobs := [] BlobSResult{}
+	rBlobs := []BlobSResult{}
 	err = searchBlobs(rbd.Querry, rbd.SType, repids, els, &rBlobs)
 	if err != nil {
 		log.Warnf("could not search blobs:%+v", err)
 	}
-	rCommits := [] CommitSResult{}
+	rCommits := []CommitSResult{}
 	err = searchCommits(rbd.Querry, repids, els, &rCommits)
 	if err != nil {
 		log.Warnf("could not search commits:%+v", err)

@@ -2,12 +2,11 @@ package gindex
 
 import (
 	"bufio"
-
 	"net/http"
 	"strings"
 
 	"github.com/G-Node/gogs/pkg/tool"
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -20,9 +19,9 @@ const (
 )
 
 func DetermineFileType(peekData []byte) (int64, error) {
-	if tool.IsAnnexedFile(peekData){
+	if tool.IsAnnexedFile(peekData) {
 		logrus.Debugf("Found an annex file")
-		return ANNEX,nil
+		return ANNEX, nil
 	}
 	typeStr := http.DetectContentType(peekData)
 	if strings.Contains(typeStr, "text") {
@@ -32,7 +31,7 @@ func DetermineFileType(peekData []byte) (int64, error) {
 		logrus.Debugf("Found a text file")
 		return TEXT, nil
 	}
-	if strings.Contains(typeStr, "pdf"){
+	if strings.Contains(typeStr, "pdf") {
 		logrus.Debugf("Found a pdf file")
 		return PDF, nil
 	}
@@ -50,7 +49,7 @@ func BlobFileType(blob *IndexBlob) (int64, *bufio.Reader, error) {
 	if blob.Size() > 1024 {
 		peekData, err := blobBuffer.Peek(1024)
 		if err != nil {
-			return UKKNOWN,nil, err
+			return UKKNOWN, nil, err
 		}
 		fType, err := DetermineFileType(peekData)
 		return fType, blobBuffer, err

@@ -2,7 +2,7 @@ package gindex
 
 import (
 	"github.com/G-Node/gig"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 func IndexRepoWithPath(path, ref string, serv *ElServer, repoid string, reponame string) error {

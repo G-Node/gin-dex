@@ -1,25 +1,25 @@
 package gindex
 
 import (
-	"net/http"
-	"io/ioutil"
+	"bufio"
+	"bytes"
+	"crypto/sha1"
 	"encoding/json"
-	"io"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
-	"github.com/gogits/go-gogs-client"
-	"github.com/G-Node/gig"
+	"io"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
-	"crypto/sha1"
 	"regexp"
+	"strings"
+
+	"github.com/G-Node/gig"
 	"github.com/G-Node/git-module"
+	"github.com/gogits/go-gogs-client"
+	log "github.com/sirupsen/logrus"
 	pdfcontent "github.com/unidoc/unidoc/pdf/contentstream"
 	pdf "github.com/unidoc/unidoc/pdf/model"
-
-	"bytes"
-	"bufio"
 )
 
 func getParsedBody(r *http.Request, obj interface{}) error {
@@ -54,7 +54,7 @@ func getParsedHttpCall(method, path string, body io.Reader, token, csrfT string,
 		return err
 	}
 	defer resp.Body.Close()
-	if (resp.StatusCode != http.StatusOK) {
+	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("%s: %d, %s", resp.Status, resp.StatusCode, req.URL)
 	}
 	return getParsedResponse(resp, obj)
@@ -72,9 +72,9 @@ func map2struct(in interface{}, out interface{}) error {
 
 // Find gin repos under a certain directory, to which the authenticated user has access
 func findRepos(rpath string, rbd *ReIndexRequest, gins *GinServer) ([]*gogs.Repository, error) {
-	var repos [] *gogs.Repository
+	var repos []*gogs.Repository
 	err := filepath.Walk(rpath, func(path string, info os.FileInfo, err error) error {
-		if ! info.IsDir() {
+		if !info.IsDir() {
 			return nil
 		}
 		repo, err := gig.OpenRepository(path)
@@ -94,7 +94,7 @@ func findRepos(rpath string, rbd *ReIndexRequest, gins *GinServer) ([]*gogs.Repo
 
 func hasRepoAccess(repository *gig.Repository, rbd *ReIndexRequest, gins *GinServer) (*gogs.Repository, error) {
 	splPath := strings.Split(repository.Path, string(filepath.Separator))
-	if ! (len(splPath) > 2) {
+	if !(len(splPath) > 2) {
 		return nil, fmt.Errorf("not a repo path %s", repository.Path)
 	}
 	owner := splPath[len(splPath)-2]

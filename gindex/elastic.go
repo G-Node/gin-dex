@@ -2,16 +2,14 @@ package gindex
 
 import (
 	"bytes"
-	"fmt"
-	"net/http"
-
 	"encoding/json"
-
+	"fmt"
 	"io/ioutil"
+	"net/http"
+	"strings"
 
 	"github.com/G-Node/gig"
-	log "github.com/Sirupsen/logrus"
-	"strings"
+	log "github.com/sirupsen/logrus"
 )
 
 type ElServer struct {

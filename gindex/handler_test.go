@@ -1,13 +1,14 @@
 package gindex
 
 import (
-	"testing"
-	"net/http/httptest"
-	"net/http"
-	"encoding/json"
 	"bytes"
-	log "github.com/Sirupsen/logrus"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"strings"
+	"testing"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func TestIndexHandler(t *testing.T) {
@@ -23,11 +24,11 @@ func TestIndexHandler(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(data))
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("did receive the following:%v", r)
-		if (r.Method == http.MethodGet && strings.Contains(r.URL.Path, "commits")) {
+		if r.Method == http.MethodGet && strings.Contains(r.URL.Path, "commits") {
 			log.Printf("need to reply with found")
 			w.Write([]byte(`{"found": false}`))
 		}
-		if (r.Method == http.MethodGet && strings.Contains(r.URL.Path, "blobs")) {
+		if r.Method == http.MethodGet && strings.Contains(r.URL.Path, "blobs") {
 			log.Printf("need to reply with found")
 			w.Write([]byte(`{"found": false}`))
 		}
@@ -79,14 +80,14 @@ func TestSearchHandler(t *testing.T) {
 func makeFakeServer(searchResultBlob, searchResultCommit string) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("did receive the following:%v", r)
-		if (r.Method == http.MethodPost && strings.Contains(r.URL.Path, "commits")) {
+		if r.Method == http.MethodPost && strings.Contains(r.URL.Path, "commits") {
 			w.Write([]byte(searchResultCommit))
 		}
-		if (r.Method == http.MethodPost && strings.Contains(r.URL.Path, "blobs")) {
+		if r.Method == http.MethodPost && strings.Contains(r.URL.Path, "blobs") {
 			log.Printf("need to reply with blob results")
 			w.Write([]byte(searchResultBlob))
 		}
-		if (r.Method == http.MethodGet && strings.Contains(r.URL.Path, "api/v1/user/repos")) {
+		if r.Method == http.MethodGet && strings.Contains(r.URL.Path, "api/v1/user/repos") {
 			w.Write([]byte(`[{"id":0}]`))
 		}
 	}))
