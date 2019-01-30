@@ -75,7 +75,7 @@ func (bl *IndexBlob) AddToIndexTimeout(server *ElServer, repopath string, id gig
 	case res := <-err:
 		return res
 	case <-time.After(time.Duration(timeout) * time.Second):
-		return fmt.Errorf("timed out:%s,%v", repopath, bl)
+		return fmt.Errorf("Timed out: %s, %v", repopath, bl)
 	}
 }
 
@@ -83,25 +83,25 @@ func (bl *IndexBlob) AddToIndex(server *ElServer, repopath string, id gig.SHA1) 
 	indexid := GetIndexCommitId(id.String(), bl.GinRepoId)
 	f_type, blobBuffer, err := BlobFileType(bl)
 	if err != nil {
-		log.Errorf("Could not determine file type: %+v", err)
+		log.Errorf("Could not determine file type: %v", err)
 		return nil
 	}
 	switch f_type {
 	case ANNEX:
 		APFileC, err := ioutil.ReadAll(blobBuffer)
-		log.Debugf("Annex file:%s", APFileC)
+		log.Debugf("Annex file: %s", APFileC)
 		if err != nil {
-			log.Errorf("Could not open annex pointer file: %+v", err)
+			log.Errorf("Could not open annex pointer file: %v", err)
 			return err
 		}
 		Afile, err := gannex.NewAFile(repopath, "", "", APFileC)
 		if err != nil {
-			log.Errorf("Could not get annex file%+v", err)
+			log.Errorf("Could not get annex file: %v", err)
 			return err
 		}
 		fp, err := Afile.Open()
 		if err != nil {
-			log.Errorf("Could not open annex file: %+v", err)
+			log.Errorf("Could not open annex file: %v", err)
 			return err
 		}
 		defer fp.Close()
@@ -114,7 +114,7 @@ func (bl *IndexBlob) AddToIndex(server *ElServer, repopath string, id gig.SHA1) 
 		}
 		ct, err := ioutil.ReadAll(blobBuffer)
 		if err != nil {
-			log.Errorf("Could not read text file content:%+v", err)
+			log.Errorf("Could not read text file content: %v", err)
 			return err
 		}
 		bl.Content = string(ct)
@@ -130,7 +130,7 @@ func (bl *IndexBlob) AddToIndex(server *ElServer, repopath string, id gig.SHA1) 
 		}
 		content, err := GetPlainPdf(blobBuffer, bl.Size())
 		if err != nil {
-			log.Debugf("Could not read pdf: %+v", err)
+			log.Debugf("Could not read pdf: %v", err)
 			return err
 		}
 		bl.Content = content
