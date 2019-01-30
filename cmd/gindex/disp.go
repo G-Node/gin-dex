@@ -1,8 +1,8 @@
 package main
 
 import (
-	"net/http/httptest"
 	"net/http"
+	"net/http/httptest"
 	"sync"
 )
 
@@ -16,13 +16,12 @@ func NewWorker(id int, workerPool chan chan IndexJob) Worker {
 	}
 }
 
-
 type IndexJob struct {
-	Rec *httptest.ResponseRecorder
-	Req *http.Request
-	Els *ElServer
+	Rec   *httptest.ResponseRecorder
+	Req   *http.Request
+	Els   *ElServer
 	Rpath *string
-	Wg *sync.WaitGroup
+	Wg    *sync.WaitGroup
 }
 
 type Worker struct {

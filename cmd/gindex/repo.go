@@ -31,7 +31,7 @@ func IndexRepoWithPath(path, ref string, serv *ElServer, repoid string, reponame
 }
 
 func ReIndexRepoWithPath(path, ref string, serv *ElServer, repoid string, reponame string) error {
-	log.Info("Start indexing repository with path: %s", path)
+	log.Infof("Start indexing repository with path: %s", path)
 	rep, err := gig.OpenRepository(path)
 	if err != nil {
 		log.Errorf("Could not open repository: %+v", err)
