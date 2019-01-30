@@ -1,4 +1,4 @@
-package gindex
+package main
 
 import (
 	"github.com/G-Node/gig"

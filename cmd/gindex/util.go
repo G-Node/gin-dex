@@ -1,4 +1,4 @@
-package gindex
+package main
 
 import (
 	"bufio"

@@ -1,4 +1,4 @@
-package gindex
+package main
 
 const (
 	SEARCH_MATCH    = iota
