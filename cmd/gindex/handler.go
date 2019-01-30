@@ -18,7 +18,7 @@ import (
 func IndexH(w http.ResponseWriter, r *http.Request, els *ElServer, rpath *string) {
 	rbd := IndexRequest{}
 	err := getParsedBody(r, &rbd)
-	log.Debugf("got a indexing request:%+v", rbd)
+	log.Debugf("Got an indexing request: %+v", rbd)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -41,7 +41,7 @@ func IndexH(w http.ResponseWriter, r *http.Request, els *ElServer, rpath *string
 func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinServer) {
 	rbd := SearchRequest{}
 	err := getParsedBody(r, &rbd)
-	log.Debugf("got a search request: %+v", rbd)
+	log.Debugf("Got a search request: %+v", rbd)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -53,9 +53,9 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSer
 	}
 	log.Debugf("Repos to search in: %+v", repids)
 	if rbd.SType == SEARCH_SUGGEST {
-		suggestions, err := suggest(rbd.Querry, repids, els)
+		suggestions, err := suggest(rbd.Query, repids, els)
 		if err != nil {
-			log.Warnf("could not search blobs: %s", err)
+			log.Warnf("Could not search blobs: %v", err)
 		}
 		result := []Suggestion{}
 		for _, suf := range suggestions {
@@ -72,14 +72,14 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSer
 	}
 	// Lets search now
 	rBlobs := []BlobSResult{}
-	err = searchBlobs(rbd.Querry, rbd.SType, repids, els, &rBlobs)
+	err = searchBlobs(rbd.Query, rbd.SType, repids, els, &rBlobs)
 	if err != nil {
-		log.Warnf("could not search blobs: %s", err)
+		log.Warnf("Could not search blobs: %v", err)
 	}
 	rCommits := []CommitSResult{}
-	err = searchCommits(rbd.Querry, repids, els, &rCommits)
+	err = searchCommits(rbd.Query, repids, els, &rCommits)
 	if err != nil {
-		log.Warnf("could not search commits: %s", err)
+		log.Warnf("Could not search commits: %v", err)
 	}
 	data, err := json.Marshal(SearchResults{Blobs: rBlobs, Commits: rCommits})
 	if err != nil {
@@ -95,7 +95,7 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSer
 func SuggestH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinServer) {
 	rbd := SearchRequest{}
 	err := getParsedBody(r, &rbd)
-	log.Debugf("got a search request:%+v", rbd)
+	log.Debugf("Got a search request: %+v", rbd)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -105,11 +105,11 @@ func SuggestH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSe
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	log.Debugf("Repos to search in:%+v", repids)
+	log.Debugf("Repos to search in: %+v", repids)
 	// Lets search now
-	suggestions, err := suggest(rbd.Querry, repids, els)
+	suggestions, err := suggest(rbd.Query, repids, els)
 	if err != nil {
-		log.Warnf("could not search blobs:%+v", err)
+		log.Warnf("Could not search blobs: %v", err)
 	}
 	suggestionsJ, err := json.Marshal(suggestions)
 	if err != nil {
@@ -124,7 +124,7 @@ func SuggestH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSe
 func ReIndexRepo(w http.ResponseWriter, r *http.Request, els *ElServer, rpath *string) {
 	rbd := IndexRequest{}
 	err := getParsedBody(r, &rbd)
-	log.Debugf("got a indexing request:%+v", rbd)
+	log.Debugf("Got an indexing request: %+v", rbd)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -141,10 +141,10 @@ func ReIndexRepo(w http.ResponseWriter, r *http.Request, els *ElServer, rpath *s
 func ReindexH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinServer, rpath *string) {
 	rbd := ReIndexRequest{}
 	getParsedBody(r, &rbd)
-	log.Debugf("got a reindex request:%+v", rbd)
+	log.Debugf("Got a reindex request: %+v", rbd)
 	repos, err := findRepos(*rpath, &rbd, gins)
 	if err != nil {
-		log.Debugf("failed listing repositories: %+v", err)
+		log.Debugf("Failed listing repositories: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -170,8 +170,8 @@ func ReindexH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSe
 	w.WriteHeader(http.StatusOK)
 }
 
-func suggest(querry string, okRepids []string, els *ElServer) ([]string, error) {
-	commS, err := els.Suggest(querry, okRepids)
+func suggest(query string, okRepids []string, els *ElServer) ([]string, error) {
+	commS, err := els.Suggest(query, okRepids)
 	defer commS.Body.Close()
 	if err != nil {
 		return nil, err
@@ -192,9 +192,9 @@ func suggest(querry string, okRepids []string, els *ElServer) ([]string, error) 
 	return result, nil
 }
 
-func searchCommits(querry string, okRepids []string, els *ElServer,
+func searchCommits(query string, okRepids []string, els *ElServer,
 	result interface{}) error {
-	commS, err := els.SearchCommits(querry, okRepids)
+	commS, err := els.SearchCommits(query, okRepids)
 	if err != nil {
 		return err
 	}
@@ -206,9 +206,9 @@ func searchCommits(querry string, okRepids []string, els *ElServer,
 	return nil
 }
 
-func searchBlobs(querry string, searchType int64, okRepids []string, els *ElServer,
+func searchBlobs(query string, searchType int64, okRepids []string, els *ElServer,
 	result interface{}) error {
-	blobS, err := els.SearchBlobs(querry, okRepids, searchType)
+	blobS, err := els.SearchBlobs(query, okRepids, searchType)
 	if err != nil {
 		return err
 	}

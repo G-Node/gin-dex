@@ -26,12 +26,12 @@ func getParsedBody(r *http.Request, obj interface{}) error {
 	data, err := ioutil.ReadAll(r.Body)
 	r.Body.Close()
 	if err != nil {
-		log.Debugf("Could not read request body: %+v", err)
+		log.Debugf("Could not read request body: %v", err)
 		return err
 	}
 	err = json.Unmarshal(data, obj)
 	if err != nil {
-		log.Debugf("Could not unmarshal request: %+v, %s", err, string(data))
+		log.Debugf("Could not unmarshal request [%s]: %v", string(data), err)
 		return err
 	}
 	return nil
@@ -83,7 +83,7 @@ func findRepos(rpath string, rbd *ReIndexRequest, gins *GinServer) ([]*gogs.Repo
 		}
 		gRepo, err := hasRepoAccess(repo, rbd, gins)
 		if err != nil {
-			log.Debugf("no acces to repo:%+v", err)
+			log.Debugf("Failed to access repo: %v", err)
 			return filepath.SkipDir
 		}
 		repos = append(repos, gRepo)
@@ -197,7 +197,7 @@ func getOkRepoIds(rbd *SearchRequest, gins *GinServer) ([]string, error) {
 		err := getParsedHttpCall(http.MethodGet, fmt.Sprintf("%s/api/v1/user/repos", gins.URL),
 			nil, rbd.Token, rbd.CsrfT, &repos)
 		if err != nil {
-			log.Infof("could not querry user repos: %+v", err)
+			log.Infof("Could not query user repos: %v", err)
 		}
 	}
 
@@ -206,7 +206,7 @@ func getOkRepoIds(rbd *SearchRequest, gins *GinServer) ([]string, error) {
 	err := getParsedHttpCall(http.MethodGet, fmt.Sprintf("%s/api/v1/repos/search/?limit=10000", gins.URL),
 		nil, rbd.Token, rbd.CsrfT, &prepos)
 	if err != nil {
-		log.Errorf("could not querry public repos: %+v", err)
+		log.Errorf("Could not query public repos: %v", err)
 		return nil, err
 	}
 	repos = append(repos, prepos.Data...)

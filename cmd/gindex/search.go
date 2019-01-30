@@ -3,6 +3,6 @@ package main
 type Result struct {
 }
 
-func Search(querry string, repos []int64) ([]Result, error) {
+func Search(query string, repos []int64) ([]Result, error) {
 	return nil, nil
 }

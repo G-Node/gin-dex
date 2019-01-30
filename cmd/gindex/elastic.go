@@ -104,64 +104,64 @@ func (el *ElServer) Has(adr string) (bool, error) {
 	return res.Found, nil
 }
 
-func (el *ElServer) search(querry, adrr string) (*http.Response, error) {
-	req, err := http.NewRequest("POST", adrr, bytes.NewReader([]byte(querry)))
+func (el *ElServer) search(query, adrr string) (*http.Response, error) {
+	req, err := http.NewRequest("POST", adrr, bytes.NewReader([]byte(query)))
 	if err != nil {
-		log.Errorf("Could not form search query:%+v", err)
-		log.Errorf("Formatted query was:%s", querry)
+		log.Errorf("Could not form search query: %v", err)
+		log.Errorf("Formatted query was: %s", query)
 		return nil, err
 	}
 	return el.elasticRequest(req)
 }
 
-func (el *ElServer) SearchBlobs(querry string, okRepos []string, searchType int64) (*http.Response, error) {
+func (el *ElServer) SearchBlobs(query string, okRepos []string, searchType int64) (*http.Response, error) {
 	//implement the passing of the repo ids
 	repos, err := json.Marshal(okRepos)
 	if err != nil {
-		log.Errorf("Could not marshal okRepos: %+v", err)
+		log.Errorf("Could not marshal okRepos: %v", err)
 		return nil, err
 	}
-	var formatted_querry string
+	var formatted_query string
 	switch searchType {
 	case SEARCH_FUZZY:
-		formatted_querry = fmt.Sprintf(BLOB_FUZ_QUERRY, querry, string(repos))
+		formatted_query = fmt.Sprintf(BLOB_FUZ_QUERY, query, string(repos))
 	case SEARCH_WILDCARD:
-		formatted_querry = fmt.Sprintf(BLOB_WC_QUERRY, strings.ToLower(querry), string(repos))
-	case SEARCH_QUERRY:
-		formatted_querry = fmt.Sprintf(BLOB_QString_QUERRY, querry, string(repos))
+		formatted_query = fmt.Sprintf(BLOB_WC_QUERY, strings.ToLower(query), string(repos))
+	case SEARCH_QUERY:
+		formatted_query = fmt.Sprintf(BLOB_QString_QUERY, query, string(repos))
 	default:
-		formatted_querry = fmt.Sprintf(BLOB_QUERRY, querry, string(repos))
+		formatted_query = fmt.Sprintf(BLOB_QUERY, query, string(repos))
 	}
 
 	adrr := fmt.Sprintf("%s/%s/_search", el.adress, el.blindex)
-	return el.search(formatted_querry, adrr)
+	return el.search(formatted_query, adrr)
 }
 
-func (el *ElServer) SearchCommits(querry string, okRepos []string) (*http.Response, error) {
+func (el *ElServer) SearchCommits(query string, okRepos []string) (*http.Response, error) {
 	//implement the passing of the repo ids
 	repos, err := json.Marshal(okRepos)
 	if err != nil {
-		log.Errorf("Could not marshal okRepos: %+v", err)
+		log.Errorf("Could not marshal okRepos: %v", err)
 		return nil, err
 	}
-	formatted_querry := fmt.Sprintf(COMMIT_QUERRY, querry, string(repos))
+	formattedQuery := fmt.Sprintf(COMMIT_QUERY, query, string(repos))
 	adrr := fmt.Sprintf("%s/%s/_search", el.adress, el.coindex)
-	return el.search(formatted_querry, adrr)
+	return el.search(formattedQuery, adrr)
 }
 
-func (el *ElServer) Suggest(querry string, okRepos []string) (*http.Response, error) {
+func (el *ElServer) Suggest(query string, okRepos []string) (*http.Response, error) {
 	//implement the passing of the repo ids
 	repos, err := json.Marshal(okRepos)
 	if err != nil {
-		log.Errorf("Could not marshal okRepos: %+v", err)
+		log.Errorf("Could not marshal okRepos: %v", err)
 		return nil, err
 	}
-	formatted_querry := fmt.Sprintf(SUGGEST_QUERRY, querry, string(repos))
+	formatted_query := fmt.Sprintf(SUGGEST_QUERY, query, string(repos))
 	adrr := fmt.Sprintf("%s/%s/_search", el.adress, el.blindex)
-	return el.search(formatted_querry, adrr)
+	return el.search(formatted_query, adrr)
 }
 
-var BLOB_QUERRY = `{
+var BLOB_QUERY = `{
 	"from" : 0, "size" : 20,
 	  "_source": ["Oid","GinRepoName","FirstCommit","Path"],
 	  "query": {
@@ -193,7 +193,7 @@ var BLOB_QUERRY = `{
 	}
 }`
 
-var BLOB_FUZ_QUERRY = `{
+var BLOB_FUZ_QUERY = `{
 	"from" : 0, "size" : 20,
 	  "_source": ["Oid","GinRepoName","FirstCommit","Path"],
 	  "query": {
@@ -225,7 +225,7 @@ var BLOB_FUZ_QUERRY = `{
 	}
 }`
 
-var BLOB_WC_QUERRY = `{
+var BLOB_WC_QUERY = `{
 	"from" : 0, "size" : 20,
 	  "_source": ["Oid","GinRepoName","FirstCommit","Path"],
 	  "query": {
@@ -257,7 +257,7 @@ var BLOB_WC_QUERRY = `{
 	}
 }`
 
-var BLOB_QString_QUERRY = `{
+var BLOB_QString_QUERY = `{
 	"from" : 0, "size" : 20,
 	  "_source": ["Oid","GinRepoName","FirstCommit","Path"],
 	  "query": {
@@ -290,7 +290,7 @@ var BLOB_QString_QUERRY = `{
 	}
 }`
 
-var COMMIT_QUERRY = `{
+var COMMIT_QUERY = `{
 	"from" : 0, "size" : 20,
 	  "_source": ["Oid","GinRepoName","FirstCommit","Path"],
 	  "query": {
@@ -331,7 +331,7 @@ var COMMIT_QUERRY = `{
 	}
 }`
 
-var SUGGEST_QUERRY = `{
+var SUGGEST_QUERY = `{
   "from": 0,
   "size": 20,
   "_source": [

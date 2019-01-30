@@ -20,9 +20,9 @@ Options:
   --debug                         Print debug messages
 `
 
-	args, err := docopt.Parse(usage, nil, true, "gin-dex0.1a", false)
+	args, err := docopt.Parse(usage, nil, true, "gin-dex0.2", false)
 	if err != nil {
-		log.Printf("Error while parsing command line: %+v", err)
+		log.Printf("Error while parsing command line: %v", err)
 		os.Exit(-1)
 	}
 
@@ -42,7 +42,7 @@ Options:
 	els := NewElServer(elURL, blobIndex, commitIndex, nil, nil)
 	err = els.Init()
 	if err != nil {
-		log.Errorf("Failed to connect to elastic service: %s", err)
+		log.Errorf("Failed to connect to elastic service: %v", err)
 		os.Exit(-1)
 	}
 	rpath := libgin.ReadConf("rpath")
@@ -69,14 +69,14 @@ Options:
 	// txtMs: Maximum size to index for text files (in MB)
 	txtMs, err := strconv.ParseInt(libgin.ReadConfDefault("txtMSize", "10"), 10, 64)
 	if err != nil {
-		log.Printf("Error while parsing txtMs variable: %s", err.Error())
+		log.Printf("Error while parsing txtMs variable: %v", err)
 		txtMs = 10
 		log.Printf("Using default: %d", txtMs)
 	}
 	// txtMs: Maximum size to index for PDF files (in MB)
 	pdfMs, err := strconv.ParseInt(libgin.ReadConfDefault("pdfMSize", "100"), 10, 64)
 	if err != nil {
-		log.Printf("Error while parsing pdfMsize variable: %s", err.Error())
+		log.Printf("Error while parsing pdfMsize variable: %v", err)
 		pdfMs = 100
 		log.Printf("Using default: %d", pdfMs)
 	}
@@ -86,7 +86,7 @@ Options:
 	// timeout for adding contents to index (in seconds)
 	timeout, err := strconv.ParseInt(libgin.ReadConfDefault("timeout", "60"), 10, 64)
 	if err != nil {
-		log.Printf("Error while parsing timeout variable: %s", err.Error())
+		log.Printf("Error while parsing timeout variable: %v", err)
 		timeout = 60
 		log.Printf("Using default: %d", timeout)
 	}
