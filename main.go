@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
 
 	"github.com/G-Node/gin-dex/gindex"
+	"github.com/G-Node/libgin/libgin"
 	"github.com/docopt/docopt-go"
 	log "github.com/sirupsen/logrus"
 )
@@ -13,23 +15,11 @@ import (
 func main() {
 	usage := `gin-dex.
 Usage:
-  gin-dex [--eladress=<eladress> --elblindex=<elblindex> --elcoindex=<elcoindex> --eluser=<eluser> --elpw=<elpw> --rpath=<rpath> --gin=<gin> --port=<port> --txtMSize=<txtMSize> --pdfMSize=<pdfMSize> --timeout=<timeout> --debug ]
+  gin-dex [--debug]
 
 Options:
-  --eladress=<eladress>           Adress of the elastic server [default: http://localhost:9200]
-  --elblindex=<elblindex>         Blob index [default: blobs]
-  --elcoindex=<elcoindex>         Commit index [default: commits]
-  --eluser=<eluser>               Elastic user [default: elastic]
-  --elpw=<elpw>                   Elastic password [default: changeme]
-  --port=<port>                   Server port [default: 8099]
-  --gin=<gin>                     Gin Server Adress [default: https://gin.g-node.org]
-  --rpath=<rpath>                 Path to the repositories [default: /repos]
-  --txtMSize=<txtMSize>           Maximum text file size [default: 10]
-  --pdfMSize=<pdfMSize>           Maximum pdf file size [default: 100]
-  --timeout=<timeout>             Default timeout for indexing operation [default: 60]
-  --debug                         Whether debug messages shall be printed
-
- `
+  --debug                         Print debug messages
+`
 
 	args, err := docopt.Parse(usage, nil, true, "gin-dex0.1a", false)
 	if err != nil {
@@ -43,13 +33,23 @@ Options:
 	}
 	log.Debug("Starting gin-dex service")
 
-	uname := args["--eluser"].(string)
-	pw := args["--elpw"].(string)
-	els := gindex.NewElServer(args["--eladress"].(string), args["--elblindex"].(string), args["--elcoindex"].(string),
-		&uname, &pw)
-	els.Init()
-	gin := &gindex.GinServer{URL: args["--gin"].(string)}
-	rpath := args["--rpath"].(string)
+	elURL := libgin.ReadConf("elurl")
+
+	// These don't need to be configurable
+	commitIndex := "commits"
+	blobIndex := "blobs"
+
+	// TODO: Remove all auth support?
+	els := gindex.NewElServer(elURL, blobIndex, commitIndex, nil, nil)
+	err = els.Init()
+	if err != nil {
+		log.Errorf("Failed to connect to elastic service: %s", err)
+		os.Exit(-1)
+	}
+	rpath := libgin.ReadConf("rpath")
+
+	// TODO: Remove requirement for calling back to the GIN server
+	gin := &gindex.GinServer{URL: "https://gin.g-node.org"}
 
 	http.HandleFunc("/index", func(w http.ResponseWriter, r *http.Request) {
 		gindex.IndexH(w, r, els, &rpath)
@@ -67,16 +67,33 @@ Options:
 		gindex.ReindexH(w, r, els, gin, &rpath)
 	})
 
-	txtMs, _ := strconv.ParseInt(args["--txtMSize"].(string), 10, 0)
-	pdfMs, _ := strconv.ParseInt(args["--pdfMSize"].(string), 10, 0)
+	// txtMs: Maximum size to index for text files (in MB)
+	txtMs, err := strconv.ParseInt(libgin.ReadConfDefault("txtMSize", "10"), 10, 64)
+	if err != nil {
+		log.Printf("Error while parsing txtMs variable: %s", err.Error())
+		txtMs = 10
+		log.Printf("Using default: %d", txtMs)
+	}
+	// txtMs: Maximum size to index for PDF files (in MB)
+	pdfMs, err := strconv.ParseInt(libgin.ReadConfDefault("pdfMSize", "100"), 10, 64)
+	if err != nil {
+		log.Printf("Error while parsing pdfMsize variable: %s", err.Error())
+		pdfMs = 100
+		log.Printf("Using default: %d", pdfMs)
+	}
 	gindex.Setting.TxtMSize = txtMs
 	gindex.Setting.PdfMSize = pdfMs
 
-	to, err := strconv.ParseInt(args["--txtMSize"].(string), 10, 0)
-	gindex.Setting.Timeout = 60
-	if err == nil {
-		gindex.Setting.Timeout = to
+	// timeout for adding contents to index (in seconds)
+	timeout, err := strconv.ParseInt(libgin.ReadConfDefault("timeout", "60"), 10, 64)
+	if err != nil {
+		log.Printf("Error while parsing timeout variable: %s", err.Error())
+		timeout = 60
+		log.Printf("Using default: %d", timeout)
 	}
+	gindex.Setting.Timeout = timeout
 
-	log.Fatal(http.ListenAndServe(":"+args["--port"].(string), nil))
+	port := libgin.ReadConf("port")
+	fmt.Printf("Listening for connections on port %s\n", port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), nil))
 }
