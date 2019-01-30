@@ -1,12 +1,13 @@
-package gindex
+package main
 
 const (
-	SEARCH_MATCH    = iota
+	SEARCH_MATCH = iota
 	SEARCH_FUZZY
 	SEARCH_WILDCARD
 	SEARCH_QUERRY
 	SEARCH_SUGGEST
 )
+
 type SearchRequest struct {
 	Token  string
 	CsrfT  string
@@ -20,7 +21,6 @@ type IndexRequest struct {
 	RepoPath string
 	RepoID   string
 }
-
 
 type ReIndexRequest struct {
 	*IndexRequest
@@ -61,5 +61,5 @@ type Suggestions struct {
 
 type Suggestion struct {
 	Title string
-	Url string
+	Url   string
 }

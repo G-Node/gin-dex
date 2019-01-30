@@ -6,7 +6,6 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/G-Node/gin-dex/gindex"
 	"github.com/G-Node/libgin/libgin"
 	"github.com/docopt/docopt-go"
 	log "github.com/sirupsen/logrus"
@@ -40,7 +39,7 @@ Options:
 	blobIndex := "blobs"
 
 	// TODO: Remove all auth support?
-	els := gindex.NewElServer(elURL, blobIndex, commitIndex, nil, nil)
+	els := NewElServer(elURL, blobIndex, commitIndex, nil, nil)
 	err = els.Init()
 	if err != nil {
 		log.Errorf("Failed to connect to elastic service: %s", err)
@@ -49,22 +48,22 @@ Options:
 	rpath := libgin.ReadConf("rpath")
 
 	// TODO: Remove requirement for calling back to the GIN server
-	gin := &gindex.GinServer{URL: "https://gin.g-node.org"}
+	gin := &GinServer{URL: "https://gin.g-node.org"}
 
 	http.HandleFunc("/index", func(w http.ResponseWriter, r *http.Request) {
-		gindex.IndexH(w, r, els, &rpath)
+		IndexH(w, r, els, &rpath)
 	})
 
 	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
-		gindex.SearchH(w, r, els, gin)
+		SearchH(w, r, els, gin)
 	})
 
 	http.HandleFunc("/suggest", func(w http.ResponseWriter, r *http.Request) {
-		gindex.SuggestH(w, r, els, gin)
+		SuggestH(w, r, els, gin)
 	})
 
 	http.HandleFunc("/reindex", func(w http.ResponseWriter, r *http.Request) {
-		gindex.ReindexH(w, r, els, gin, &rpath)
+		ReindexH(w, r, els, gin, &rpath)
 	})
 
 	// txtMs: Maximum size to index for text files (in MB)
@@ -81,8 +80,8 @@ Options:
 		pdfMs = 100
 		log.Printf("Using default: %d", pdfMs)
 	}
-	gindex.Setting.TxtMSize = txtMs
-	gindex.Setting.PdfMSize = pdfMs
+	Setting.TxtMSize = txtMs
+	Setting.PdfMSize = pdfMs
 
 	// timeout for adding contents to index (in seconds)
 	timeout, err := strconv.ParseInt(libgin.ReadConfDefault("timeout", "60"), 10, 64)
@@ -91,7 +90,7 @@ Options:
 		timeout = 60
 		log.Printf("Using default: %d", timeout)
 	}
-	gindex.Setting.Timeout = timeout
+	Setting.Timeout = timeout
 
 	port := libgin.ReadConf("port")
 	fmt.Printf("Listening for connections on port %s\n", port)
