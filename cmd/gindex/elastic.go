@@ -26,6 +26,7 @@ func NewElServer(adress, blindex, coindex string, uname, password *string) *ElSe
 
 func (el *ElServer) Init() error {
 	// create Blob mapping
+	log.Debugf("Connecting to %s", el.adress)
 	adrr := fmt.Sprintf("%s/%s/", el.adress, el.blindex)
 	req, err := http.NewRequest("PUT", adrr, bytes.NewReader([]byte(BLOB_MAPPING)))
 	if err != nil {
@@ -36,7 +37,7 @@ func (el *ElServer) Init() error {
 		return err
 	} else if resp.StatusCode != http.StatusOK {
 		data, _ := ioutil.ReadAll(resp.Body)
-		log.Infof("Blob Mapping not created:%d, %s", resp.StatusCode, data)
+		log.Infof("Blob Mapping not created: %d, %s", resp.StatusCode, data)
 	}
 
 	// create Commit mapping
@@ -50,7 +51,7 @@ func (el *ElServer) Init() error {
 		return err
 	} else if resp.StatusCode != http.StatusOK {
 		data, _ := ioutil.ReadAll(resp.Body)
-		log.Infof("Commit Mapping not created:%d, %s", resp.StatusCode, data)
+		log.Infof("Commit Mapping not created: %d, %s", resp.StatusCode, data)
 	}
 	return nil
 }

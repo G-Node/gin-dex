@@ -41,7 +41,7 @@ func IndexH(w http.ResponseWriter, r *http.Request, els *ElServer, rpath *string
 func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinServer) {
 	rbd := SearchRequest{}
 	err := getParsedBody(r, &rbd)
-	log.Debugf("got a search request:%+v", rbd)
+	log.Debugf("got a search request: %+v", rbd)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -51,11 +51,11 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSer
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	log.Debugf("Repod to search in:%+v", repids)
+	log.Debugf("Repos to search in: %+v", repids)
 	if rbd.SType == SEARCH_SUGGEST {
 		suggestions, err := suggest(rbd.Querry, repids, els)
 		if err != nil {
-			log.Warnf("could not search blobs:%+v", err)
+			log.Warnf("could not search blobs: %s", err)
 		}
 		result := []Suggestion{}
 		for _, suf := range suggestions {
@@ -74,19 +74,20 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSer
 	rBlobs := []BlobSResult{}
 	err = searchBlobs(rbd.Querry, rbd.SType, repids, els, &rBlobs)
 	if err != nil {
-		log.Warnf("could not search blobs:%+v", err)
+		log.Warnf("could not search blobs: %s", err)
 	}
 	rCommits := []CommitSResult{}
 	err = searchCommits(rbd.Querry, repids, els, &rCommits)
 	if err != nil {
-		log.Warnf("could not search commits:%+v", err)
+		log.Warnf("could not search commits: %s", err)
 	}
 	data, err := json.Marshal(SearchResults{Blobs: rBlobs, Commits: rCommits})
 	if err != nil {
-		log.Debugf("Could not Masrschal search results")
+		log.Debugf("Could not marshal search results")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	log.Infof("[Matches] Blobs: %d  Commits: %d", len(rBlobs), len(rCommits))
 	w.WriteHeader(http.StatusOK)
 	w.Write(data)
 }
@@ -104,7 +105,7 @@ func SuggestH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSe
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	log.Debugf("Repod to search in:%+v", repids)
+	log.Debugf("Repos to search in:%+v", repids)
 	// Lets search now
 	suggestions, err := suggest(rbd.Querry, repids, els)
 	if err != nil {
