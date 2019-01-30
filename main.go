@@ -30,11 +30,19 @@ Options:
   --debug                         Whether debug messages shall be printed
 
  `
+
 	args, err := docopt.Parse(usage, nil, true, "gin-dex0.1a", false)
 	if err != nil {
 		log.Printf("Error while parsing command line: %+v", err)
 		os.Exit(-1)
 	}
+
+	if args["--debug"].(bool) {
+		log.SetLevel(log.DebugLevel)
+		log.SetFormatter(&log.TextFormatter{ForceColors: true})
+	}
+	log.Debug("Starting gin-dex service")
+
 	uname := args["--eluser"].(string)
 	pw := args["--elpw"].(string)
 	els := gindex.NewElServer(args["--eladress"].(string), args["--elblindex"].(string), args["--elcoindex"].(string),
@@ -70,9 +78,5 @@ Options:
 		gindex.Setting.Timeout = to
 	}
 
-	if args["--debug"].(bool) {
-		log.SetLevel(log.DebugLevel)
-		log.SetFormatter(&log.TextFormatter{ForceColors: true})
-	}
 	log.Fatal(http.ListenAndServe(":"+args["--port"].(string), nil))
 }
