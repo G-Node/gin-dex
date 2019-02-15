@@ -165,20 +165,20 @@ func (el *ESServer) Suggest(query string, okRepos []string) (*http.Response, err
 }
 
 var BLOB_QUERY = `{
-	"from" : 0, "size" : 20,
-	  "_source": ["Oid","GinRepoName","FirstCommit","Path"],
-	  "query": {
+"from" : 0, "size" : 20,
+	"_source": ["Oid","GinRepoName","FirstCommit","Path"],
+	"query": {
 		"bool": {
-		  "must": {
-			"match": {
-			  "_all": "%s"
+			"must": {
+				"match": {
+					"_all": "%s"
+				}
+			},
+			"filter": {
+				"terms": {
+					"GinRepoId" : %s
+				}
 			}
-		  },
-		  "filter": {
-			"terms": {
-			  "GinRepoId" : %s
-			}
-		  }
 		}
 	},
 	"highlight" : {
@@ -190,23 +190,23 @@ var BLOB_QUERY = `{
 				"require_field_match":false,
 				"pre_tags" : ["<b>"],
 				"post_tags" : ["</b>"]
-				}
+			}
 			}
 		]
 	}
 }`
 
 var BLOB_FUZ_QUERY = `{
-	"from" : 0, "size" : 20,
-	  "_source": ["Oid","GinRepoName","FirstCommit","Path"],
-	  "query": {
+"from" : 0, "size" : 20,
+		"_source": ["Oid","GinRepoName","FirstCommit","Path"],
+		"query": {
 		"bool": {
-		  "must": {
+			"must": {
 			"fuzzy": {
 				"_all":"%s"
 			}
-		  },
-		  "filter": {
+			},
+			"filter": {
 			"terms": {
 				"GinRepoId" : %s
 			}
@@ -229,16 +229,16 @@ var BLOB_FUZ_QUERY = `{
 }`
 
 var BLOB_WC_QUERY = `{
-	"from" : 0, "size" : 20,
-	  "_source": ["Oid","GinRepoName","FirstCommit","Path"],
-	  "query": {
+"from" : 0, "size" : 20,
+		"_source": ["Oid","GinRepoName","FirstCommit","Path"],
+		"query": {
 		"bool": {
-		  "must": {
+			"must": {
 			"wildcard": {
 				"_all":"%s"
 			}
-		  },
-		  "filter": {
+			},
+			"filter": {
 			"terms": {
 				"GinRepoId" : %s
 			}
@@ -261,17 +261,17 @@ var BLOB_WC_QUERY = `{
 }`
 
 var BLOB_QString_QUERY = `{
-	"from" : 0, "size" : 20,
-	  "_source": ["Oid","GinRepoName","FirstCommit","Path"],
-	  "query": {
+"from" : 0, "size" : 20,
+		"_source": ["Oid","GinRepoName","FirstCommit","Path"],
+		"query": {
 		"bool": {
-		  "must": {
+			"must": {
 			"query_string": {
 				"default_field" : "Content",
 				"query":"%s"
 			}
-		  },
-		  "filter": {
+			},
+			"filter": {
 			"terms": {
 				"GinRepoId" : %s
 			}
@@ -294,20 +294,20 @@ var BLOB_QString_QUERY = `{
 }`
 
 var COMMIT_QUERY = `{
-	"from" : 0, "size" : 20,
-	  "_source": ["Oid","GinRepoName","FirstCommit","Path"],
-	  "query": {
+"from" : 0, "size" : 20,
+		"_source": ["Oid","GinRepoName","FirstCommit","Path"],
+		"query": {
 		"bool": {
-		  "must": {
+			"must": {
 			"match": {
-			  "_all": "%s"
+				"_all": "%s"
 			}
-		  },
-		  "filter": {
+			},
+			"filter": {
 			"terms": {
-			  "GinRepoId" : %s
+				"GinRepoId" : %s
 			}
-		  }
+			}
 		}
 	},
 	"highlight" : {
@@ -335,211 +335,211 @@ var COMMIT_QUERY = `{
 }`
 
 var SUGGEST_QUERY = `{
-  "from": 0,
-  "size": 20,
-  "_source": [
-    ""
-  ],
-  "query": {
-    "bool": {
-      "must": {
-        "match_phrase_prefix": {
-          "Content": {
-            "query": "%s",
-            "max_expansions": 10
-          }
-        }
-      },
-      "filter": {
-        "terms": {
-          "GinRepoId": %s
-        }
-      }
-    }
-  },
-  "highlight": {
-    "fields": {
-      "Content": {}
-    },
-    "boundary_scanner": "word"
-  }
+"from": 0,
+	"size": 20,
+	"_source": [
+	""
+	],
+	"query": {
+	"bool": {
+		"must": {
+		"match_phrase_prefix": {
+			"Content": {
+			"query": "%s",
+			"max_expansions": 10
+			}
+		}
+		},
+		"filter": {
+		"terms": {
+			"GinRepoId": %s
+		}
+		}
+	}
+	},
+	"highlight": {
+	"fields": {
+		"Content": {}
+	},
+	"boundary_scanner": "word"
+	}
 }`
 
 var BLOB_MAPPING = `{
-  "mappings": {
-    "blob": {
-      "_all": {
-        "enabled": true
-      },
-      "properties": {
-        "Content": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "type": "keyword",
-              "ignore_above": 256
-            }
-          }
-        },
-        "FirstCommit": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "type": "keyword",
-              "ignore_above": 256
-            }
-          }
-        },
-        "GinRepoId": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "type": "keyword",
-              "ignore_above": 256
-            }
-          }
-        },
-        "GinRepoName": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "type": "keyword",
-              "ignore_above": 256
-            }
-          }
-        },
-        "Id": {
-          "type": "long"
-        },
-        "IndexingTime": {
-          "type": "date"
-        },
-        "Oid": {
-          "type": "long"
-        },
-        "Path": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "type": "keyword",
-              "ignore_above": 256
-            }
-          }
-        }
-      }
-    }
-  }
+"mappings": {
+	"blob": {
+		"_all": {
+		"enabled": true
+		},
+		"properties": {
+		"Content": {
+			"type": "text",
+			"fields": {
+			"keyword": {
+				"type": "keyword",
+				"ignore_above": 256
+			}
+			}
+		},
+		"FirstCommit": {
+			"type": "text",
+			"fields": {
+			"keyword": {
+				"type": "keyword",
+				"ignore_above": 256
+			}
+			}
+		},
+		"GinRepoId": {
+			"type": "text",
+			"fields": {
+			"keyword": {
+				"type": "keyword",
+				"ignore_above": 256
+			}
+			}
+		},
+		"GinRepoName": {
+			"type": "text",
+			"fields": {
+			"keyword": {
+				"type": "keyword",
+				"ignore_above": 256
+			}
+			}
+		},
+		"Id": {
+			"type": "long"
+		},
+		"IndexingTime": {
+			"type": "date"
+		},
+		"Oid": {
+			"type": "long"
+		},
+		"Path": {
+			"type": "text",
+			"fields": {
+			"keyword": {
+				"type": "keyword",
+				"ignore_above": 256
+			}
+			}
+		}
+		}
+	}
+	}
 }`
 
 var COMMIT_MAPPING = `{
-  "mappings": {
-    "commit": {
-      "properties": {
-        "Author": {
-          "properties": {
-            "Date": {
-              "type": "date"
-            },
-            "Email": {
-              "type": "text",
-              "fields": {
-                "keyword": {
-                  "type": "keyword",
-                  "ignore_above": 256
-                }
-              }
-            },
-            "Name": {
-              "type": "text",
-              "fields": {
-                "keyword": {
-                  "type": "keyword",
-                  "ignore_above": 256
-                }
-              }
-            },
-            "Offset": {
-              "type": "object"
-            }
-          }
-        },
-        "Committer": {
-          "properties": {
-            "Date": {
-              "type": "date"
-            },
-            "Email": {
-              "type": "text",
-              "fields": {
-                "keyword": {
-                  "type": "keyword",
-                  "ignore_above": 256
-                }
-              }
-            },
-            "Name": {
-              "type": "text",
-              "fields": {
-                "keyword": {
-                  "type": "keyword",
-                  "ignore_above": 256
-                }
-              }
-            },
-            "Offset": {
-              "type": "object"
-            }
-          }
-        },
-        "GPGSig": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "type": "keyword",
-              "ignore_above": 256
-            }
-          }
-        },
-        "GinRepoId": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "type": "keyword",
-              "ignore_above": 256
-            }
-          }
-        },
-        "GinRepoName": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "type": "keyword",
-              "ignore_above": 256
-            }
-          }
-        },
-        "IndexingTime": {
-          "type": "date"
-        },
-        "Message": {
-          "type": "text",
-          "fields": {
-            "keyword": {
-              "type": "keyword",
-              "ignore_above": 256
-            }
-          }
-        },
-        "Oid": {
-          "type": "long"
-        },
-        "Parent": {
-          "type": "long"
-        },
-        "Tree": {
-          "type": "long"
-        }
-      }
-    }
-  }
+"mappings": {
+	"commit": {
+		"properties": {
+		"Author": {
+			"properties": {
+			"Date": {
+				"type": "date"
+			},
+			"Email": {
+				"type": "text",
+				"fields": {
+				"keyword": {
+					"type": "keyword",
+					"ignore_above": 256
+				}
+				}
+			},
+			"Name": {
+				"type": "text",
+				"fields": {
+				"keyword": {
+					"type": "keyword",
+					"ignore_above": 256
+				}
+				}
+			},
+			"Offset": {
+				"type": "object"
+			}
+			}
+		},
+		"Committer": {
+			"properties": {
+			"Date": {
+				"type": "date"
+			},
+			"Email": {
+				"type": "text",
+				"fields": {
+				"keyword": {
+					"type": "keyword",
+					"ignore_above": 256
+				}
+				}
+			},
+			"Name": {
+				"type": "text",
+				"fields": {
+				"keyword": {
+					"type": "keyword",
+					"ignore_above": 256
+				}
+				}
+			},
+			"Offset": {
+				"type": "object"
+			}
+			}
+		},
+		"GPGSig": {
+			"type": "text",
+			"fields": {
+			"keyword": {
+				"type": "keyword",
+				"ignore_above": 256
+			}
+			}
+		},
+		"GinRepoId": {
+			"type": "text",
+			"fields": {
+			"keyword": {
+				"type": "keyword",
+				"ignore_above": 256
+			}
+			}
+		},
+		"GinRepoName": {
+			"type": "text",
+			"fields": {
+			"keyword": {
+				"type": "keyword",
+				"ignore_above": 256
+			}
+			}
+		},
+		"IndexingTime": {
+			"type": "date"
+		},
+		"Message": {
+			"type": "text",
+			"fields": {
+			"keyword": {
+				"type": "keyword",
+				"ignore_above": 256
+			}
+			}
+		},
+		"Oid": {
+			"type": "long"
+		},
+		"Parent": {
+			"type": "long"
+		},
+		"Tree": {
+			"type": "long"
+		}
+		}
+	}
+	}
 }`
