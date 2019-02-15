@@ -25,7 +25,7 @@ func TestRepoIndexing(t *testing.T) {
 		}
 	}))
 	defer ts.Close()
-	fakeServer := ElServer{address: ts.URL}
+	fakeServer := ESServer{address: ts.URL}
 	err := IndexRepoWithPath("../tdata/repo1.git", "tag1", &fakeServer, "testid", "testname")
 	if err != nil {
 		t.Errorf("Could  not open repository:%v", err)
@@ -55,7 +55,7 @@ func TestAnnexIndexing(t *testing.T) {
 		}
 	}))
 	defer ts.Close()
-	fakeServer := ElServer{address: ts.URL}
+	fakeServer := ESServer{address: ts.URL}
 	err := IndexRepoWithPath("../tdata/repo2.git", "tag2", &fakeServer, "annextest", "testname")
 	if err != nil {
 		t.Errorf("Could  not open repository:%v", err)

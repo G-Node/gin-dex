@@ -19,7 +19,7 @@ func NewWorker(id int, workerPool chan chan IndexJob) Worker {
 type IndexJob struct {
 	Rec   *httptest.ResponseRecorder
 	Req   *http.Request
-	Els   *ElServer
+	Els   *ESServer
 	Rpath *string
 	Wg    *sync.WaitGroup
 }

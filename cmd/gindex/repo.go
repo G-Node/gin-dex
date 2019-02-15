@@ -5,7 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func IndexRepoWithPath(path, ref string, serv *ElServer, repoid string, reponame string) error {
+func IndexRepoWithPath(path, ref string, serv *ESServer, repoid string, reponame string) error {
 	log.Infof("Start indexing repository with path: %s", path)
 	rep, err := gig.OpenRepository(path)
 	if err != nil {
@@ -35,7 +35,7 @@ func IndexRepoWithPath(path, ref string, serv *ElServer, repoid string, reponame
 	return err
 }
 
-func ReIndexRepoWithPath(path, ref string, serv *ElServer, repoid string, reponame string) error {
+func ReIndexRepoWithPath(path, ref string, serv *ESServer, repoid string, reponame string) error {
 	log.Infof("Start indexing repository with path: %s", path)
 	rep, err := gig.OpenRepository(path)
 	if err != nil {
@@ -72,7 +72,7 @@ func ReIndexRepoWithPath(path, ref string, serv *ElServer, repoid string, repona
 }
 
 func indexCommit(commit *gig.Commit, repoid string, commitid gig.SHA1, rep *gig.Repository,
-	path string, reponame string, serv *ElServer,
+	path string, reponame string, serv *ESServer,
 	indexBlob func(string, gig.SHA1) (bool, error)) error {
 	err := NewCommitFromGig(commit, repoid, reponame, commitid).AddToIndex(serv, "commits", commitid)
 	if err != nil {

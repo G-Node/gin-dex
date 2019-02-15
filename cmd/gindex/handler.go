@@ -15,7 +15,7 @@ import (
 )
 
 // Handler for Index requests
-func IndexH(w http.ResponseWriter, r *http.Request, els *ElServer, rpath *string) {
+func IndexH(w http.ResponseWriter, r *http.Request, els *ESServer, rpath *string) {
 	rbd := IndexRequest{}
 	err := getParsedBody(r, &rbd)
 	log.Debugf("Got an indexing request: %+v", rbd)
@@ -38,7 +38,7 @@ func IndexH(w http.ResponseWriter, r *http.Request, els *ElServer, rpath *string
 }
 
 // Handler for SearchBlobs requests
-func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinServer) {
+func SearchH(w http.ResponseWriter, r *http.Request, els *ESServer, gins *GinServer) {
 	rbd := SearchRequest{}
 	err := getParsedBody(r, &rbd)
 	log.Debugf("Got a search request: %+v", rbd)
@@ -92,7 +92,7 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSer
 	w.Write(data)
 }
 
-func SuggestH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinServer) {
+func SuggestH(w http.ResponseWriter, r *http.Request, els *ESServer, gins *GinServer) {
 	rbd := SearchRequest{}
 	err := getParsedBody(r, &rbd)
 	log.Debugf("Got a search request: %+v", rbd)
@@ -121,7 +121,7 @@ func SuggestH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSe
 }
 
 // Handler for Index requests
-func ReIndexRepo(w http.ResponseWriter, r *http.Request, els *ElServer, rpath *string) {
+func ReIndexRepo(w http.ResponseWriter, r *http.Request, els *ESServer, rpath *string) {
 	rbd := IndexRequest{}
 	err := getParsedBody(r, &rbd)
 	log.Debugf("Got an indexing request: %+v", rbd)
@@ -138,7 +138,7 @@ func ReIndexRepo(w http.ResponseWriter, r *http.Request, els *ElServer, rpath *s
 	w.WriteHeader(http.StatusOK)
 	return
 }
-func ReindexH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinServer, rpath *string) {
+func ReindexH(w http.ResponseWriter, r *http.Request, els *ESServer, gins *GinServer, rpath *string) {
 	rbd := ReIndexRequest{}
 	getParsedBody(r, &rbd)
 	log.Debugf("Got a reindex request: %+v", rbd)
@@ -170,7 +170,7 @@ func ReindexH(w http.ResponseWriter, r *http.Request, els *ElServer, gins *GinSe
 	w.WriteHeader(http.StatusOK)
 }
 
-func suggest(query string, okRepids []string, els *ElServer) ([]string, error) {
+func suggest(query string, okRepids []string, els *ESServer) ([]string, error) {
 	commS, err := els.Suggest(query, okRepids)
 	defer commS.Body.Close()
 	if err != nil {
@@ -192,7 +192,7 @@ func suggest(query string, okRepids []string, els *ElServer) ([]string, error) {
 	return result, nil
 }
 
-func searchCommits(query string, okRepids []string, els *ElServer,
+func searchCommits(query string, okRepids []string, els *ESServer,
 	result interface{}) error {
 	commS, err := els.SearchCommits(query, okRepids)
 	if err != nil {
@@ -206,7 +206,7 @@ func searchCommits(query string, okRepids []string, els *ElServer,
 	return nil
 }
 
-func searchBlobs(query string, searchType int64, okRepids []string, els *ElServer,
+func searchBlobs(query string, searchType int64, okRepids []string, els *ESServer,
 	result interface{}) error {
 	blobS, err := els.SearchBlobs(query, okRepids, searchType)
 	if err != nil {
