@@ -13,21 +13,21 @@ import (
 )
 
 type ElServer struct {
-	adress   string
+	address  string
 	uname    *string
 	password *string
 	blindex  string
 	coindex  string
 }
 
-func NewElServer(adress, blindex, coindex string, uname, password *string) *ElServer {
-	return &ElServer{adress: adress, uname: uname, password: password, blindex: blindex, coindex: coindex}
+func NewElServer(address, blindex, coindex string, uname, password *string) *ElServer {
+	return &ElServer{address: address, uname: uname, password: password, blindex: blindex, coindex: coindex}
 }
 
 func (el *ElServer) Init() error {
 	// create Blob mapping
-	log.Debugf("Connecting to %s", el.adress)
-	adrr := fmt.Sprintf("%s/%s/", el.adress, el.blindex)
+	log.Debugf("Connecting to %s", el.address)
+	adrr := fmt.Sprintf("%s/%s/", el.address, el.blindex)
 	req, err := http.NewRequest("PUT", adrr, bytes.NewReader([]byte(BLOB_MAPPING)))
 	if err != nil {
 		return err
@@ -41,7 +41,7 @@ func (el *ElServer) Init() error {
 	}
 
 	// create Commit mapping
-	adrr = fmt.Sprintf("%s/%s/", el.adress, el.coindex)
+	adrr = fmt.Sprintf("%s/%s/", el.address, el.coindex)
 	req, err = http.NewRequest("PUT", adrr, bytes.NewReader([]byte(COMMIT_MAPPING)))
 	if err != nil {
 		return err
@@ -57,7 +57,7 @@ func (el *ElServer) Init() error {
 }
 
 func (el *ElServer) Index(index, doctype string, data []byte, id gig.SHA1) (*http.Response, error) {
-	adrr := fmt.Sprintf("%s/%s/%s/%s", el.adress, index, doctype, id.String())
+	adrr := fmt.Sprintf("%s/%s/%s/%s", el.address, index, doctype, id.String())
 	req, err := http.NewRequest("POST", adrr, bytes.NewReader(data))
 	if err != nil {
 		return nil, err
@@ -75,12 +75,12 @@ func (el *ElServer) elasticRequest(req *http.Request) (*http.Response, error) {
 }
 
 func (el *ElServer) HasCommit(index string, commitId gig.SHA1) (bool, error) {
-	adrr := fmt.Sprintf("%s/%s/commit/%s", el.adress, el.coindex, commitId)
+	adrr := fmt.Sprintf("%s/%s/commit/%s", el.address, el.coindex, commitId)
 	return el.Has(adrr)
 }
 
 func (el *ElServer) HasBlob(index string, blobId gig.SHA1) (bool, error) {
-	adrr := fmt.Sprintf("%s/%s/blob/%s", el.adress, el.blindex, blobId)
+	adrr := fmt.Sprintf("%s/%s/blob/%s", el.address, el.blindex, blobId)
 	return el.Has(adrr)
 }
 
@@ -133,7 +133,7 @@ func (el *ElServer) SearchBlobs(query string, okRepos []string, searchType int64
 		formatted_query = fmt.Sprintf(BLOB_QUERY, query, string(repos))
 	}
 
-	adrr := fmt.Sprintf("%s/%s/_search", el.adress, el.blindex)
+	adrr := fmt.Sprintf("%s/%s/_search", el.address, el.blindex)
 	return el.search(formatted_query, adrr)
 }
 
@@ -145,7 +145,7 @@ func (el *ElServer) SearchCommits(query string, okRepos []string) (*http.Respons
 		return nil, err
 	}
 	formattedQuery := fmt.Sprintf(COMMIT_QUERY, query, string(repos))
-	adrr := fmt.Sprintf("%s/%s/_search", el.adress, el.coindex)
+	adrr := fmt.Sprintf("%s/%s/_search", el.address, el.coindex)
 	return el.search(formattedQuery, adrr)
 }
 
@@ -157,7 +157,7 @@ func (el *ElServer) Suggest(query string, okRepos []string) (*http.Response, err
 		return nil, err
 	}
 	formatted_query := fmt.Sprintf(SUGGEST_QUERY, query, string(repos))
-	adrr := fmt.Sprintf("%s/%s/_search", el.adress, el.blindex)
+	adrr := fmt.Sprintf("%s/%s/_search", el.address, el.blindex)
 	return el.search(formatted_query, adrr)
 }
 

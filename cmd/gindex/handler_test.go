@@ -33,7 +33,7 @@ func TestIndexHandler(t *testing.T) {
 			w.Write([]byte(`{"found": false}`))
 		}
 	}))
-	el := ElServer{adress: ts.URL}
+	el := ElServer{address: ts.URL}
 	repopath := "../tdata/"
 	IndexH(rec, req, &el, &repopath)
 	log.Debugf("IndexH Response: %+v", rec)
@@ -46,7 +46,7 @@ func TestIndexHandler(t *testing.T) {
 
 func TestSearchHandler(t *testing.T) {
 	log.SetLevel(log.ErrorLevel)
-	rbd := SearchRequest{Token: "testtoken", UserID: 10, Querry: "Test SearchBlobs"}
+	rbd := SearchRequest{Token: "testtoken", UserID: 10, Query: "Test SearchBlobs"}
 	data, err := json.Marshal(rbd)
 	if err != nil {
 		log.Debugf("could not marshal search request:%+v", err)
@@ -58,7 +58,7 @@ func TestSearchHandler(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(data))
 	ts := makeFakeServer(searchResultBlob, searchResultCommit)
 	rec := httptest.NewRecorder()
-	SearchH(rec, req, &ElServer{adress: ts.URL}, &GinServer{URL: ts.URL})
+	SearchH(rec, req, &ElServer{address: ts.URL}, &GinServer{URL: ts.URL})
 	if rec.Code != http.StatusOK {
 		t.Fail()
 		return
@@ -69,7 +69,7 @@ func TestSearchHandler(t *testing.T) {
 	searchResultBlob = `{"took":1,"timed_out":false,"_shards":{"total":5,"successful":5,"skipped":0,"failed":0},"hits":{"total":0,"max_score":null,"hits":[]}}`
 	ts = makeFakeServer(searchResultBlob, searchResultCommit)
 	rec = httptest.NewRecorder()
-	SearchH(rec, req, &ElServer{adress: ts.URL}, &GinServer{URL: ts.URL})
+	SearchH(rec, req, &ElServer{address: ts.URL}, &GinServer{URL: ts.URL})
 	if rec.Code != http.StatusOK {
 		t.Fail()
 		return
