@@ -12,7 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type ElServer struct {
+type ESServer struct {
 	address  string
 	uname    *string
 	password *string
@@ -20,11 +20,11 @@ type ElServer struct {
 	coindex  string
 }
 
-func NewElServer(address, blindex, coindex string, uname, password *string) *ElServer {
-	return &ElServer{address: address, uname: uname, password: password, blindex: blindex, coindex: coindex}
+func NewESServer(address, blindex, coindex string, uname, password *string) *ESServer {
+	return &ESServer{address: address, uname: uname, password: password, blindex: blindex, coindex: coindex}
 }
 
-func (el *ElServer) Init() error {
+func (el *ESServer) Init() error {
 	// create Blob mapping
 	log.Debugf("Connecting to %s", el.address)
 	adrr := fmt.Sprintf("%s/%s/", el.address, el.blindex)
@@ -56,7 +56,7 @@ func (el *ElServer) Init() error {
 	return nil
 }
 
-func (el *ElServer) Index(index, doctype string, data []byte, id gig.SHA1) (*http.Response, error) {
+func (el *ESServer) Index(index, doctype string, data []byte, id gig.SHA1) (*http.Response, error) {
 	adrr := fmt.Sprintf("%s/%s/%s/%s", el.address, index, doctype, id.String())
 	req, err := http.NewRequest("POST", adrr, bytes.NewReader(data))
 	if err != nil {
@@ -65,7 +65,7 @@ func (el *ElServer) Index(index, doctype string, data []byte, id gig.SHA1) (*htt
 	return el.elasticRequest(req)
 }
 
-func (el *ElServer) elasticRequest(req *http.Request) (*http.Response, error) {
+func (el *ESServer) elasticRequest(req *http.Request) (*http.Response, error) {
 	if el.uname != nil {
 		req.SetBasicAuth(*el.uname, *el.password)
 	}
@@ -74,17 +74,17 @@ func (el *ElServer) elasticRequest(req *http.Request) (*http.Response, error) {
 	return cl.Do(req)
 }
 
-func (el *ElServer) HasCommit(index string, commitId gig.SHA1) (bool, error) {
+func (el *ESServer) HasCommit(index string, commitId gig.SHA1) (bool, error) {
 	adrr := fmt.Sprintf("%s/%s/commit/%s", el.address, el.coindex, commitId)
 	return el.Has(adrr)
 }
 
-func (el *ElServer) HasBlob(index string, blobId gig.SHA1) (bool, error) {
+func (el *ESServer) HasBlob(index string, blobId gig.SHA1) (bool, error) {
 	adrr := fmt.Sprintf("%s/%s/blob/%s", el.address, el.blindex, blobId)
 	return el.Has(adrr)
 }
 
-func (el *ElServer) Has(adr string) (bool, error) {
+func (el *ESServer) Has(adr string) (bool, error) {
 	req, err := http.NewRequest("GET", adr, nil)
 	if err != nil {
 		return false, err
@@ -104,7 +104,7 @@ func (el *ElServer) Has(adr string) (bool, error) {
 	return res.Found, nil
 }
 
-func (el *ElServer) search(query, adrr string) (*http.Response, error) {
+func (el *ESServer) search(query, adrr string) (*http.Response, error) {
 	req, err := http.NewRequest("POST", adrr, bytes.NewReader([]byte(query)))
 	if err != nil {
 		log.Errorf("Could not form search query: %v", err)
@@ -114,7 +114,7 @@ func (el *ElServer) search(query, adrr string) (*http.Response, error) {
 	return el.elasticRequest(req)
 }
 
-func (el *ElServer) SearchBlobs(query string, okRepos []string, searchType int64) (*http.Response, error) {
+func (el *ESServer) SearchBlobs(query string, okRepos []string, searchType int64) (*http.Response, error) {
 	//implement the passing of the repo ids
 	repos, err := json.Marshal(okRepos)
 	if err != nil {
@@ -137,7 +137,7 @@ func (el *ElServer) SearchBlobs(query string, okRepos []string, searchType int64
 	return el.search(formatted_query, adrr)
 }
 
-func (el *ElServer) SearchCommits(query string, okRepos []string) (*http.Response, error) {
+func (el *ESServer) SearchCommits(query string, okRepos []string) (*http.Response, error) {
 	//implement the passing of the repo ids
 	repos, err := json.Marshal(okRepos)
 	if err != nil {
@@ -149,7 +149,7 @@ func (el *ElServer) SearchCommits(query string, okRepos []string) (*http.Respons
 	return el.search(formattedQuery, adrr)
 }
 
-func (el *ElServer) Suggest(query string, okRepos []string) (*http.Response, error) {
+func (el *ESServer) Suggest(query string, okRepos []string) (*http.Response, error) {
 	//implement the passing of the repo ids
 	repos, err := json.Marshal(okRepos)
 	if err != nil {

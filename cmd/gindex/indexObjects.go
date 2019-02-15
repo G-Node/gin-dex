@@ -53,7 +53,7 @@ func (c *IndexCommit) ToJson() ([]byte, error) {
 	return json.Marshal(c)
 }
 
-func (c *IndexCommit) AddToIndex(server *ElServer, index string, id gig.SHA1) error {
+func (c *IndexCommit) AddToIndex(server *ESServer, index string, id gig.SHA1) error {
 	data, err := c.ToJson()
 	if err != nil {
 		return err
@@ -67,7 +67,7 @@ func (bl *IndexBlob) ToJson() ([]byte, error) {
 	return json.Marshal(bl)
 }
 
-func (bl *IndexBlob) AddToIndexTimeout(server *ElServer, repopath string, id gig.SHA1, timeout int64) error {
+func (bl *IndexBlob) AddToIndexTimeout(server *ESServer, repopath string, id gig.SHA1, timeout int64) error {
 	err := make(chan error)
 	defer close(err)
 	go func() { err <- bl.AddToIndex(server, repopath, id) }()
@@ -79,7 +79,7 @@ func (bl *IndexBlob) AddToIndexTimeout(server *ElServer, repopath string, id gig
 	}
 }
 
-func (bl *IndexBlob) AddToIndex(server *ElServer, repopath string, id gig.SHA1) error {
+func (bl *IndexBlob) AddToIndex(server *ESServer, repopath string, id gig.SHA1) error {
 	indexid := GetIndexCommitId(id.String(), bl.GinRepoId)
 	f_type, blobBuffer, err := BlobFileType(bl)
 	if err != nil {
@@ -155,7 +155,7 @@ func (bl *IndexBlob) IsInIndex() (bool, error) {
 	return false, nil
 }
 
-func AddToIndex(data []byte, server *ElServer, index, doctype string, id gig.SHA1) error {
+func AddToIndex(data []byte, server *ESServer, index, doctype string, id gig.SHA1) error {
 	resp, err := server.Index(index, doctype, data, id)
 	if err != nil {
 		return err

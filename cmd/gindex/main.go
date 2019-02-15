@@ -39,7 +39,7 @@ Options:
 	blobIndex := "blobs"
 
 	// TODO: Remove all auth support?
-	els := NewElServer(elURL, blobIndex, commitIndex, nil, nil)
+	els := NewESServer(elURL, blobIndex, commitIndex, nil, nil)
 	err = els.Init()
 	if err != nil {
 		log.Errorf("Failed to connect to elastic service: %v", err)
