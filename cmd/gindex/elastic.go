@@ -170,8 +170,8 @@ var BLOB_QUERY = `{
 	"query": {
 		"bool": {
 			"must": {
-				"match": {
-					"_all": "%s"
+				"multi_match": {
+					"query": "%s"
 				}
 			},
 			"filter": {
@@ -368,9 +368,6 @@ var SUGGEST_QUERY = `{
 var BLOB_MAPPING = `{
 "mappings": {
 	"blob": {
-		"_all": {
-		"enabled": true
-		},
 		"properties": {
 		"Content": {
 			"type": "text",
