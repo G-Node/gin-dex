@@ -109,7 +109,7 @@ func (bl *IndexBlob) AddToIndex(server *ESServer, repopath string, id gig.SHA1) 
 		return bl.AddToIndex(server, repopath, id)
 
 	case TEXT:
-		if bl.Size() > gannex.MEGABYTE*Setting.TxtMSize {
+		if bl.Size() > gannex.MEGABYTE*Setting.MaxSizeText {
 			return fmt.Errorf("File to big")
 		}
 		ct, err := ioutil.ReadAll(blobBuffer)
@@ -125,7 +125,7 @@ func (bl *IndexBlob) AddToIndex(server *ESServer, repopath string, id gig.SHA1) 
 		}
 		bl.Content = string(ct)
 	case PDF:
-		if bl.Size() > gannex.MEGABYTE*Setting.PdfMSize {
+		if bl.Size() > gannex.MEGABYTE*Setting.MaxSizePDF {
 			return fmt.Errorf("File to big")
 		}
 		content, err := GetPlainPdf(blobBuffer, bl.Size())
