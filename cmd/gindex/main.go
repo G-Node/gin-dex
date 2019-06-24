@@ -20,7 +20,7 @@ Options:
   --debug                         Print debug messages
 `
 
-	args, err := docopt.Parse(usage, nil, true, "gin-dex0.2", false)
+	args, err := docopt.Parse(usage, nil, true, "gin-dex 0.3", false)
 	if err != nil {
 		log.Printf("Error while parsing command line: %v", err)
 		os.Exit(-1)
