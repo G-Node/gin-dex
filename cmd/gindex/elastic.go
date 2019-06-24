@@ -368,9 +368,6 @@ var SUGGEST_QUERY = `{
 var BLOB_MAPPING = `{
 "mappings": {
 	"blob": {
-		"_all": {
-		"enabled": true
-		},
 		"properties": {
 		"Content": {
 			"type": "text",
