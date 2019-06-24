@@ -48,7 +48,10 @@ Options:
 	rpath := libgin.ReadConf("repository_store")
 
 	// TODO: Remove requirement for calling back to the GIN server
-	gin := &GinServer{URL: "https://gin.g-node.org"}
+	ginURL := libgin.ReadConf("gin_url")
+	gin := &GinServer{URL: ginURL}
+
+	log.Debug("Registering routes")
 
 	http.HandleFunc("/index", func(w http.ResponseWriter, r *http.Request) {
 		IndexH(w, r, els, &rpath)

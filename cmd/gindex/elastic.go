@@ -28,9 +28,11 @@ func NewESServer(address, blindex, coindex string, uname, password *string) *ESS
 
 // Init initialises indexes and mappings in the ElasticSearch server.
 func (el *ESServer) Init() error {
+	// TODO: Check if mappings already exist and skip
 	// create Blob mapping
 	log.Debugf("Connecting to %s", el.address)
 	addr := fmt.Sprintf("%s/%s/", el.address, el.blindex)
+	log.Debugf("Adding blob mapping to %s", addr)
 	req, err := http.NewRequest("PUT", addr, bytes.NewReader([]byte(BLOB_MAPPING)))
 	if err != nil {
 		return err
@@ -45,6 +47,7 @@ func (el *ESServer) Init() error {
 
 	// create Commit mapping
 	addr = fmt.Sprintf("%s/%s/", el.address, el.coindex)
+	log.Debugf("Adding commit mapping to %s", addr)
 	req, err = http.NewRequest("PUT", addr, bytes.NewReader([]byte(COMMIT_MAPPING)))
 	if err != nil {
 		return err
