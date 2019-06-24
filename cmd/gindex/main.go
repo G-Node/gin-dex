@@ -32,7 +32,7 @@ Options:
 	}
 	log.Debug("Starting gin-dex service")
 
-	elURL := libgin.ReadConf("elurl")
+	elURL := libgin.ReadConf("elastic_url")
 
 	// These don't need to be configurable
 	commitIndex := "commits"
@@ -45,7 +45,7 @@ Options:
 		log.Errorf("Failed to connect to elastic service: %v", err)
 		os.Exit(-1)
 	}
-	rpath := libgin.ReadConf("rpath")
+	rpath := libgin.ReadConf("repository_store")
 
 	// TODO: Remove requirement for calling back to the GIN server
 	gin := &GinServer{URL: "https://gin.g-node.org"}
@@ -66,22 +66,22 @@ Options:
 		ReindexH(w, r, els, gin, &rpath)
 	})
 
-	// txtMs: Maximum size to index for text files (in MB)
-	txtMs, err := strconv.ParseInt(libgin.ReadConfDefault("txtMSize", "10"), 10, 64)
+	// maxTxt: Maximum size to index for text files (in MB)
+	maxTxt, err := strconv.ParseInt(libgin.ReadConfDefault("text_max", "10"), 10, 64)
 	if err != nil {
-		log.Printf("Error while parsing txtMs variable: %v", err)
-		txtMs = 10
-		log.Printf("Using default: %d", txtMs)
+		log.Printf("Error while parsing maxTxt variable: %v", err)
+		maxTxt = 10
+		log.Printf("Using default: %d", maxTxt)
 	}
-	// txtMs: Maximum size to index for PDF files (in MB)
-	pdfMs, err := strconv.ParseInt(libgin.ReadConfDefault("pdfMSize", "100"), 10, 64)
+	// maxPDF: Maximum size to index for PDF files (in MB)
+	maxPDF, err := strconv.ParseInt(libgin.ReadConfDefault("pdf_max", "100"), 10, 64)
 	if err != nil {
-		log.Printf("Error while parsing pdfMsize variable: %v", err)
-		pdfMs = 100
-		log.Printf("Using default: %d", pdfMs)
+		log.Printf("Error while parsing maxPDFize variable: %v", err)
+		maxPDF = 100
+		log.Printf("Using default: %d", maxPDF)
 	}
-	Setting.TxtMSize = txtMs
-	Setting.PdfMSize = pdfMs
+	Setting.MaxSizeText = maxTxt
+	Setting.MaxSizePDF = maxPDF
 
 	// timeout for adding contents to index (in seconds)
 	timeout, err := strconv.ParseInt(libgin.ReadConfDefault("timeout", "60"), 10, 64)

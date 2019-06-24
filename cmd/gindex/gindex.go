@@ -50,8 +50,8 @@ type SearchResults struct {
 }
 
 var Setting struct {
-	TxtMSize int64
-	PdfMSize int64
+	MaxSizeText int64
+	MaxSizePDF int64
 	Timeout  int64
 }
 
