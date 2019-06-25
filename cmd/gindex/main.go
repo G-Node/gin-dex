@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 
+	clientconfig "github.com/G-Node/gin-cli/ginclient/config"
 	"github.com/G-Node/libgin/libgin"
 	"github.com/docopt/docopt-go"
 	log "github.com/sirupsen/logrus"
@@ -50,6 +51,14 @@ Options:
 	// TODO: Remove requirement for calling back to the GIN server
 	ginURL := libgin.ReadConf("gin_url")
 	gin := &GinServer{URL: ginURL}
+
+	web, err := clientconfig.ParseWebString(ginURL)
+	if err != nil {
+		log.Errorf("Failed to parse GIN URL string: %v", err)
+		os.Exit(-1)
+	}
+	srvcfg := clientconfig.ServerCfg{Web: web}
+	clientconfig.AddServerConf("gin", srvcfg)
 
 	log.Debug("Registering routes")
 
