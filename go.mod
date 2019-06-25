@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/G-Node/gig v0.0.0-20171025133355-6d784b40b534
+	github.com/G-Node/gin-cli v0.0.0-20190607111314-16814609dc55
 	github.com/G-Node/git-module v0.0.0-20190508131414-96b8a5e67598
 	github.com/G-Node/go-annex v0.0.0-20190508181120-874fd74994d1
 	github.com/G-Node/gogs v0.11.67-0.20190603154931-dd2cf3eefe34
@@ -12,7 +13,6 @@ require (
 	github.com/Unknwon/i18n v0.0.0-20171114194641-b64d33658966 // indirect
 	github.com/bradfitz/gomemcache v0.0.0-20190329173943-551aad21a668 // indirect
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
-	github.com/fatih/color v1.7.0 // indirect
 	github.com/go-macaron/cache v0.0.0-20151013081102-561735312776 // indirect
 	github.com/go-macaron/inject v0.0.0-20160627170012-d8a0b8677191 // indirect
 	github.com/go-macaron/session v0.0.0-20190131233854-0a0a789bf193 // indirect
@@ -21,7 +21,6 @@ require (
 	github.com/gogs/go-libravatar v0.0.0-20161120025154-cd1abbd55d09 // indirect
 	github.com/gogs/gogs v0.11.86 // indirect
 	github.com/gogs/minwinsvc v0.0.0-20170301035411-95be6356811a // indirect
-	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/mcuadros/go-version v0.0.0-20190308113854-92cdf37c5b75 // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/unidoc/unidoc v2.2.0+incompatible
