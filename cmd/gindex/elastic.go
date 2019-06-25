@@ -173,8 +173,8 @@ var BLOB_QUERY = `{
 	"query": {
 		"bool": {
 			"must": {
-				"match": {
-					"_all": "%s"
+				"multi_match": {
+					"query": "%s"
 				}
 			},
 			"filter": {
