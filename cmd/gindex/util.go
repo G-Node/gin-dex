@@ -48,7 +48,7 @@ func getParsedResponse(resp *http.Response, obj interface{}) error {
 func getParsedHttpCall(method, path string, body io.Reader, token, csrfT string, obj interface{}) error {
 	client := &http.Client{}
 	req, _ := http.NewRequest(method, path, body)
-	req.Header.Set("Cookie", fmt.Sprintf("i_like_gogits=%s; _csrf=%s", token, csrfT))
+	req.Header.Set("Cookie", fmt.Sprintf("gnode_gin=%s; _csrf=%s", token, csrfT))
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
