@@ -37,7 +37,7 @@ Options:
 		IndexH(w, r, cfg)
 	})
 	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
-		SearchH(w, r, cfg.Elasticsearch)
+		SearchH(w, r, cfg)
 	})
 	http.HandleFunc("/suggest", func(w http.ResponseWriter, r *http.Request) {
 		SuggestH(w, r, cfg.Elasticsearch)

@@ -14,7 +14,7 @@ type Configuration struct {
 	// Port for the GIN DOI service to listen on
 	Port uint16
 	// The encryption key, shared with GIN Web for verification
-	Key string
+	Key []byte
 	// Storage location for repository data
 	RepositoryStore string
 	// Maximum size for text files to index
@@ -31,7 +31,7 @@ func loadconfig() *Configuration {
 	cfg := Configuration{}
 
 	cfg.RepositoryStore = libgin.ReadConf("repository_store")
-	cfg.Key = libgin.ReadConf("key")
+	cfg.Key = []byte(libgin.ReadConf("key"))
 
 	// maxTxt: Maximum size to index for text files (in MB)
 	maxTxt, err := strconv.ParseInt(libgin.ReadConfDefault("text_max", "10"), 10, 64)

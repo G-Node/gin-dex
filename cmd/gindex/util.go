@@ -16,22 +16,30 @@ import (
 
 	"github.com/G-Node/gig"
 	"github.com/G-Node/git-module"
+	"github.com/G-Node/libgin/libgin"
 	"github.com/gogits/go-gogs-client"
 	log "github.com/sirupsen/logrus"
 	pdfcontent "github.com/unidoc/unidoc/pdf/contentstream"
 	pdf "github.com/unidoc/unidoc/pdf/model"
 )
 
-func getParsedBody(r *http.Request, obj interface{}) error {
-	data, err := ioutil.ReadAll(r.Body)
+func getParsedBody(r *http.Request, key []byte, obj interface{}) error {
+	encdata, err := ioutil.ReadAll(r.Body)
 	r.Body.Close()
 	if err != nil {
-		log.Debugf("Could not read request body: %v", err)
+		log.Errorf("Could not read request body: %v", err)
 		return err
 	}
-	err = json.Unmarshal(data, obj)
+	// decrypt data before unmarshalling
+	reqdata, err := libgin.DecryptString(key, string(encdata))
 	if err != nil {
-		log.Debugf("Could not unmarshal request [%s]: %v", string(data), err)
+		log.Errorf("Failed to decrypt request: %v", err)
+		return err
+	}
+
+	err = json.Unmarshal([]byte(reqdata), obj)
+	if err != nil {
+		log.Debugf("Could not unmarshal request [%s]: %v", string(reqdata), err)
 		return err
 	}
 	return nil

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/G-Node/gig"
+	"github.com/G-Node/libgin/libgin"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -120,15 +121,16 @@ func (el *ESServer) search(query, addr string) (*http.Response, error) {
 	return el.elasticRequest(req)
 }
 
-func (el *ESServer) SearchBlobs(query string, okRepos []string, searchType int64) (*http.Response, error) {
+func (el *ESServer) SearchBlobs(sreq *libgin.SearchRequest) (*http.Response, error) {
 	//implement the passing of the repo ids
-	repos, err := json.Marshal(okRepos)
+	repos, err := json.Marshal(sreq.RepoIDs)
 	if err != nil {
 		log.Errorf("Could not marshal okRepos: %v", err)
 		return nil, err
 	}
 	var formatted_query string
-	switch searchType {
+	query := sreq.Keywords
+	switch sreq.SType {
 	case SEARCH_FUZZY:
 		formatted_query = fmt.Sprintf(BLOB_FUZ_QUERY, query, string(repos))
 	case SEARCH_WILDCARD:
@@ -143,26 +145,26 @@ func (el *ESServer) SearchBlobs(query string, okRepos []string, searchType int64
 	return el.search(formatted_query, addr)
 }
 
-func (el *ESServer) SearchCommits(query string, okRepos []string) (*http.Response, error) {
+func (el *ESServer) SearchCommits(sreq *libgin.SearchRequest) (*http.Response, error) {
 	//implement the passing of the repo ids
-	repos, err := json.Marshal(okRepos)
+	repos, err := json.Marshal(sreq.RepoIDs)
 	if err != nil {
 		log.Errorf("Could not marshal okRepos: %v", err)
 		return nil, err
 	}
-	formattedQuery := fmt.Sprintf(COMMIT_QUERY, query, string(repos))
+	formattedQuery := fmt.Sprintf(COMMIT_QUERY, sreq.Keywords, string(repos))
 	addr := fmt.Sprintf("%s/%s/_search", el.address, el.coindex)
 	return el.search(formattedQuery, addr)
 }
 
-func (el *ESServer) Suggest(query string, okRepos []string) (*http.Response, error) {
+func (el *ESServer) Suggest(sreq *libgin.SearchRequest) (*http.Response, error) {
 	//implement the passing of the repo ids
-	repos, err := json.Marshal(okRepos)
+	repos, err := json.Marshal(sreq.RepoIDs)
 	if err != nil {
 		log.Errorf("Could not marshal okRepos: %v", err)
 		return nil, err
 	}
-	formatted_query := fmt.Sprintf(SUGGEST_QUERY, query, string(repos))
+	formatted_query := fmt.Sprintf(SUGGEST_QUERY, sreq.Keywords, string(repos))
 	addr := fmt.Sprintf("%s/%s/_search", el.address, el.blindex)
 	return el.search(formatted_query, addr)
 }
