@@ -51,7 +51,7 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ESServer, gins *GinSer
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	log.Debugf("Repos to search in: %+v", repids)
+	log.Debugf("Repos to search in [search]: %+v", repids)
 	if rbd.SType == SEARCH_SUGGEST {
 		suggestions, err := suggest(rbd.Query, repids, els)
 		if err != nil {
@@ -72,11 +72,13 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ESServer, gins *GinSer
 	}
 	// Lets search now
 	rBlobs := []BlobSResult{}
+	log.Debug("Searching blobs")
 	err = searchBlobs(rbd.Query, rbd.SType, repids, els, &rBlobs)
 	if err != nil {
 		log.Warnf("Could not search blobs: %v", err)
 	}
 	rCommits := []CommitSResult{}
+	log.Debug("Searching commits")
 	err = searchCommits(rbd.Query, repids, els, &rCommits)
 	if err != nil {
 		log.Warnf("Could not search commits: %v", err)
@@ -105,7 +107,7 @@ func SuggestH(w http.ResponseWriter, r *http.Request, els *ESServer, gins *GinSe
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	log.Debugf("Repos to search in: %+v", repids)
+	log.Debugf("Repos to search in [suggest]: %+v", repids)
 	// Lets search now
 	suggestions, err := suggest(rbd.Query, repids, els)
 	if err != nil {

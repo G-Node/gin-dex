@@ -201,6 +201,7 @@ func getOkRepoIds(rbd *SearchRequest, gins *GinServer) ([]string, error) {
 		}
 	}
 
+	log.Debug("Collecting public repositories")
 	// Get repos ids for public repos
 	prepos := struct{ Data []gogs.Repository }{}
 	err := getParsedHttpCall(http.MethodGet, fmt.Sprintf("%s/api/v1/repos/search/?limit=10000", gins.URL),
