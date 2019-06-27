@@ -17,11 +17,10 @@ func NewWorker(id int, workerPool chan chan IndexJob) Worker {
 }
 
 type IndexJob struct {
-	Rec   *httptest.ResponseRecorder
-	Req   *http.Request
-	Els   *ESServer
-	Rpath *string
-	Wg    *sync.WaitGroup
+	Rec           *httptest.ResponseRecorder
+	Req           *http.Request
+	Configuration *Configuration
+	Wg            *sync.WaitGroup
 }
 
 type Worker struct {
@@ -39,7 +38,7 @@ func (w *Worker) start() {
 			select {
 			case job := <-w.JobQueue:
 				// Dispatcher has added a job to my jobQueue.
-				ReIndexRepo(job.Rec, job.Req, job.Els, job.Rpath)
+				ReIndexRepo(job.Rec, job.Req, job.Configuration)
 				job.Wg.Done()
 			case <-w.QuitChan:
 				// We have been asked to stop.

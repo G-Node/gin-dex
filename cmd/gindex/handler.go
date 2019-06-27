@@ -15,7 +15,8 @@ import (
 )
 
 // Handler for Index requests
-func IndexH(w http.ResponseWriter, r *http.Request, els *ESServer, rpath *string) {
+func IndexH(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
+	rpath := cfg.RepositoryStore
 	rbd := IndexRequest{}
 	err := getParsedBody(r, &rbd)
 	log.Debugf("Got an indexing request: %+v", rbd)
@@ -27,8 +28,7 @@ func IndexH(w http.ResponseWriter, r *http.Request, els *ESServer, rpath *string
 	if repo[len(repo)-4:] != ".git" {
 		repo = repo + ".git"
 	}
-	err = IndexRepoWithPath(fmt.Sprintf("%s/%s", *rpath, repo),
-		"master", els, rbd.RepoID, rbd.RepoPath)
+	err = IndexRepoWithPath(cfg, fmt.Sprintf("%s/%s", rpath, repo), "master", rbd.RepoID, rbd.RepoPath)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -38,7 +38,8 @@ func IndexH(w http.ResponseWriter, r *http.Request, els *ESServer, rpath *string
 }
 
 // Handler for SearchBlobs requests
-func SearchH(w http.ResponseWriter, r *http.Request, els *ESServer, gins *GinServer) {
+func SearchH(w http.ResponseWriter, r *http.Request, els *ESServer) {
+	gins := &GinServer{}
 	rbd := SearchRequest{}
 	err := getParsedBody(r, &rbd)
 	log.Debugf("Got a search request: %+v", rbd)
@@ -94,7 +95,8 @@ func SearchH(w http.ResponseWriter, r *http.Request, els *ESServer, gins *GinSer
 	w.Write(data)
 }
 
-func SuggestH(w http.ResponseWriter, r *http.Request, els *ESServer, gins *GinServer) {
+func SuggestH(w http.ResponseWriter, r *http.Request, els *ESServer) {
+	gins := &GinServer{}
 	rbd := SearchRequest{}
 	err := getParsedBody(r, &rbd)
 	log.Debugf("Got a search request: %+v", rbd)
@@ -123,7 +125,7 @@ func SuggestH(w http.ResponseWriter, r *http.Request, els *ESServer, gins *GinSe
 }
 
 // Handler for Index requests
-func ReIndexRepo(w http.ResponseWriter, r *http.Request, els *ESServer, rpath *string) {
+func ReIndexRepo(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
 	rbd := IndexRequest{}
 	err := getParsedBody(r, &rbd)
 	log.Debugf("Got an indexing request: %+v", rbd)
@@ -131,8 +133,7 @@ func ReIndexRepo(w http.ResponseWriter, r *http.Request, els *ESServer, rpath *s
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err = ReIndexRepoWithPath(fmt.Sprintf("%s/%s", *rpath, strings.ToLower(rbd.RepoPath)+".git"),
-		"master", els, rbd.RepoID, rbd.RepoPath)
+	err = ReIndexRepoWithPath(cfg, fmt.Sprintf("%s/%s", cfg.RepositoryStore, strings.ToLower(rbd.RepoPath)+".git"), "master", rbd.RepoID, rbd.RepoPath)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -140,11 +141,13 @@ func ReIndexRepo(w http.ResponseWriter, r *http.Request, els *ESServer, rpath *s
 	w.WriteHeader(http.StatusOK)
 	return
 }
-func ReindexH(w http.ResponseWriter, r *http.Request, els *ESServer, gins *GinServer, rpath *string) {
+func ReindexH(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
+	rpath := cfg.RepositoryStore
+	gins := &GinServer{}
 	rbd := ReIndexRequest{}
 	getParsedBody(r, &rbd)
 	log.Debugf("Got a reindex request: %+v", rbd)
-	repos, err := findRepos(*rpath, &rbd, gins)
+	repos, err := findRepos(rpath, &rbd, gins)
 	if err != nil {
 		log.Debugf("Failed listing repositories: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -166,7 +169,7 @@ func ReindexH(w http.ResponseWriter, r *http.Request, els *ESServer, gins *GinSe
 		data, _ := json.Marshal(ireq)
 		req, _ := http.NewRequest(http.MethodPost, "/index", bytes.NewReader(data))
 		wg.Add(1)
-		jobQue <- IndexJob{rec, req, els, rpath, &wg}
+		jobQue <- IndexJob{rec, req, cfg, &wg}
 	}
 	wg.Wait()
 	w.WriteHeader(http.StatusOK)

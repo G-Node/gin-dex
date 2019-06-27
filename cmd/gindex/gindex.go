@@ -28,8 +28,8 @@ type ReIndexRequest struct {
 	CsrfT string
 }
 type GinServer struct {
-	URL     string
-	GetRepo string
+	URL string
+	Key string
 }
 
 type BlobSResult struct {
@@ -47,12 +47,6 @@ type CommitSResult struct {
 type SearchResults struct {
 	Blobs   []BlobSResult
 	Commits []CommitSResult
-}
-
-var Setting struct {
-	MaxSizeText int64
-	MaxSizePDF int64
-	Timeout  int64
 }
 
 type Suggestions struct {

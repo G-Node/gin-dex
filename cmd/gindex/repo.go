@@ -5,7 +5,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func IndexRepoWithPath(path, ref string, serv *ESServer, repoid string, reponame string) error {
+// IndexRepoWithPath walks a repository at a given path and submits it to the index
+func IndexRepoWithPath(cfg *Configuration, path, ref string, repoid string, reponame string) error {
 	log.Infof("Start indexing repository with path: %s", path)
 	rep, err := gig.OpenRepository(path)
 	if err != nil {
@@ -15,7 +16,7 @@ func IndexRepoWithPath(path, ref string, serv *ESServer, repoid string, reponame
 	log.Debugf("Opened repository")
 	commits, err := rep.WalkRef(ref,
 		func(comitID gig.SHA1) bool {
-			res, ierr := serv.HasCommit("commits", GetIndexCommitId(comitID.String(), repoid))
+			res, ierr := cfg.Elasticsearch.HasCommit("commits", GetIndexCommitId(comitID.String(), repoid))
 			if ierr != nil {
 				log.Errorf("Could not query commit index: %v", err)
 				return false
@@ -30,12 +31,13 @@ func IndexRepoWithPath(path, ref string, serv *ESServer, repoid string, reponame
 
 	// TODO: Fix error handling in loop
 	for commitid, commit := range commits {
-		err = indexCommit(commit, repoid, commitid, rep, path, reponame, serv, serv.HasBlob)
+		err = indexCommit(cfg, commit, repoid, commitid, rep, path, reponame, cfg.Elasticsearch.HasBlob)
 	}
 	return err
 }
 
-func ReIndexRepoWithPath(path, ref string, serv *ESServer, repoid string, reponame string) error {
+// ReIndexRepoWithPath walks a repository at a given path and resubmits it to the index
+func ReIndexRepoWithPath(cfg *Configuration, path, ref string, repoid string, reponame string) error {
 	log.Infof("Start indexing repository with path: %s", path)
 	rep, err := gig.OpenRepository(path)
 	if err != nil {
@@ -56,7 +58,7 @@ func ReIndexRepoWithPath(path, ref string, serv *ESServer, repoid string, repona
 	blobs := make(map[gig.SHA1]bool)
 	// TODO: Fix error handling in loop
 	for commitid, commit := range commits {
-		err = indexCommit(commit, repoid, commitid, rep, path, reponame, serv,
+		err = indexCommit(cfg, commit, repoid, commitid, rep, path, reponame,
 			func(indexName string, id gig.SHA1) (bool, error) {
 				if !blobs[id] {
 					blobs[id] = true
@@ -71,10 +73,8 @@ func ReIndexRepoWithPath(path, ref string, serv *ESServer, repoid string, repona
 	return nil
 }
 
-func indexCommit(commit *gig.Commit, repoid string, commitid gig.SHA1, rep *gig.Repository,
-	path string, reponame string, serv *ESServer,
-	indexBlob func(string, gig.SHA1) (bool, error)) error {
-	err := NewCommitFromGig(commit, repoid, reponame, commitid).AddToIndex(serv, "commits", commitid)
+func indexCommit(cfg *Configuration, commit *gig.Commit, repoid string, commitid gig.SHA1, rep *gig.Repository, path string, reponame string, indexBlob func(string, gig.SHA1) (bool, error)) error {
+	err := NewCommitFromGig(commit, repoid, reponame, commitid).AddToIndex(cfg.Elasticsearch, "commits", commitid)
 	if err != nil {
 		log.Printf("Indexing commit failed: %v", err)
 	}
@@ -90,7 +90,7 @@ func indexCommit(commit *gig.Commit, repoid string, commitid gig.SHA1, rep *gig.
 		}
 		if !hasBlob {
 			bpath, _ := GetBlobPath(blid.String(), commitid.String(), path)
-			err = NewBlobFromGig(blob, repoid, blid, commitid.String(), bpath, reponame).AddToIndexTimeout(serv, path, blid, Setting.Timeout)
+			err = NewBlobFromGig(blob, repoid, blid, commitid.String(), bpath, reponame).AddToIndexTimeout(cfg, blid)
 			if err != nil {
 				log.Debugf("Indexing blob failed: %v", err)
 			}
