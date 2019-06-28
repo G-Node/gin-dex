@@ -10,7 +10,7 @@ github.com/G-Node/gogs/pkg/setting
 github.com/G-Node/gogs/pkg/bindata
 github.com/G-Node/gogs/pkg/process
 github.com/G-Node/gogs/pkg/user
-# github.com/G-Node/libgin v0.0.0-20190524160103-ce8318ea7167
+# github.com/G-Node/libgin v0.0.0-20190628151107-59e32683ddec
 github.com/G-Node/libgin/libgin
 # github.com/Unknwon/com v0.0.0-20190321035513-0fed4efef755
 github.com/Unknwon/com
@@ -39,7 +39,7 @@ github.com/gogs/chardet
 github.com/gogs/go-libravatar
 # github.com/gogs/minwinsvc v0.0.0-20170301035411-95be6356811a
 github.com/gogs/minwinsvc
-# github.com/konsorten/go-windows-terminal-sequences v1.0.1
+# github.com/konsorten/go-windows-terminal-sequences v1.0.2
 github.com/konsorten/go-windows-terminal-sequences
 # github.com/mattn/go-colorable v0.1.2
 github.com/mattn/go-colorable
@@ -63,7 +63,7 @@ github.com/unidoc/unidoc/pdf/ps
 golang.org/x/crypto/pbkdf2
 # golang.org/x/image v0.0.0-20190622003408-7e034cad6442
 golang.org/x/image/tiff/lzw
-# golang.org/x/sys v0.0.0-20190422165155-953cdadca894
+# golang.org/x/sys v0.0.0-20190606203320-7fc4e5ec1444
 golang.org/x/sys/unix
 golang.org/x/sys/windows/svc
 golang.org/x/sys/windows

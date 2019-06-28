@@ -16,12 +16,9 @@ func ReadConfDefault(key, defval string) string {
 	return value
 }
 
-// ReadConf returns the value of a configuration env variable and exits with an error if it is not set.
+// ReadConf returns the value of a configuration env variable.
+// If the variable is not set, an empty string is returned (ignores any errors).
 func ReadConf(key string) string {
-	value, ok := os.LookupEnv(key)
-	if !ok {
-		// Exiting in a library function is weird and bad, but let's keep it FOR NOW
-		os.Exit(-1)
-	}
+	value, _ := os.LookupEnv(key)
 	return value
 }
