@@ -16,7 +16,7 @@ import (
 )
 
 // Handler for Index requests
-func IndexH(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
+func indexHandler(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
 	rpath := cfg.RepositoryStore
 	rbd := IndexRequest{}
 	err := getParsedBody(r, cfg.Key, &rbd)
@@ -39,7 +39,7 @@ func IndexH(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
 }
 
 // Handler for SearchBlobs requests
-func SearchH(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
+func searchHandler(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
 	els := cfg.Elasticsearch
 	sreq := &libgin.SearchRequest{}
 	err := getParsedBody(r, cfg.Key, &sreq)
@@ -91,7 +91,7 @@ func SearchH(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
 	w.Write(data)
 }
 
-func SuggestH(w http.ResponseWriter, r *http.Request, els *ESServer) {
+func suggestHandler(w http.ResponseWriter, r *http.Request, els *ESServer) {
 	sreq := &libgin.SearchRequest{}
 	log.Debugf("Repos to search in [suggest]: %+v", sreq.RepoIDs)
 	// Lets search now
@@ -109,7 +109,7 @@ func SuggestH(w http.ResponseWriter, r *http.Request, els *ESServer) {
 }
 
 // Handler for Index requests
-func ReIndexRepo(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
+func reIndexRepo(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
 	rbd := IndexRequest{}
 	err := getParsedBody(r, cfg.Key, &rbd)
 	log.Debugf("Got an indexing request: %+v", rbd)
@@ -117,7 +117,7 @@ func ReIndexRepo(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err = ReIndexRepoWithPath(cfg, fmt.Sprintf("%s/%s", cfg.RepositoryStore, strings.ToLower(rbd.RepoPath)+".git"), "master", rbd.RepoID, rbd.RepoPath)
+	err = reIndexRepoWithPath(cfg, fmt.Sprintf("%s/%s", cfg.RepositoryStore, strings.ToLower(rbd.RepoPath)+".git"), "master", rbd.RepoID, rbd.RepoPath)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -125,7 +125,7 @@ func ReIndexRepo(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
 	w.WriteHeader(http.StatusOK)
 	return
 }
-func ReindexH(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
+func reIndexHandler(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
 	rpath := cfg.RepositoryStore
 	gins := &GinServer{}
 	rbd := ReIndexRequest{}

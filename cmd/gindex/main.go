@@ -34,16 +34,16 @@ Options:
 
 	log.Debug("Registering routes")
 	http.HandleFunc("/index", func(w http.ResponseWriter, r *http.Request) {
-		IndexH(w, r, cfg)
+		indexHandler(w, r, cfg)
 	})
 	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
-		SearchH(w, r, cfg)
+		searchHandler(w, r, cfg)
 	})
 	http.HandleFunc("/suggest", func(w http.ResponseWriter, r *http.Request) {
-		SuggestH(w, r, cfg.Elasticsearch)
+		suggestHandler(w, r, cfg.Elasticsearch)
 	})
 	http.HandleFunc("/reindex", func(w http.ResponseWriter, r *http.Request) {
-		ReindexH(w, r, cfg)
+		reIndexHandler(w, r, cfg)
 	})
 
 	fmt.Printf("Listening for connections on port %d\n", cfg.Port)

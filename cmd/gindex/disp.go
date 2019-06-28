@@ -38,7 +38,7 @@ func (w *Worker) start() {
 			select {
 			case job := <-w.JobQueue:
 				// Dispatcher has added a job to my jobQueue.
-				ReIndexRepo(job.Rec, job.Req, job.Configuration)
+				reIndexRepo(job.Rec, job.Req, job.Configuration)
 				job.Wg.Done()
 			case <-w.QuitChan:
 				// We have been asked to stop.

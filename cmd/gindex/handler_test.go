@@ -11,7 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func TestIndexHandler(t *testing.T) {
+func TestindexHandlerandler(t *testing.T) {
 	log.SetLevel(log.ErrorLevel)
 	Setting.Timeout = 10
 	rbd := IndexRequest{UserID: 10, RepoPath: "repo2.git",
@@ -35,8 +35,8 @@ func TestIndexHandler(t *testing.T) {
 	}))
 	el := ESServer{address: ts.URL}
 	repopath := "../tdata/"
-	IndexH(rec, req, &el, &repopath)
-	log.Debugf("IndexH Response: %+v", rec)
+	indexHandler(rec, req, &el, &repopath)
+	log.Debugf("indexHandler Response: %+v", rec)
 	// todo: test more than just Status gfn
 	if rec.Code != http.StatusOK {
 		t.Fail()
@@ -44,7 +44,7 @@ func TestIndexHandler(t *testing.T) {
 	t.Log("[OK] indexing")
 }
 
-func TestSearchHandler(t *testing.T) {
+func TestsearchHandlerandler(t *testing.T) {
 	log.SetLevel(log.ErrorLevel)
 	rbd := SearchRequest{Token: "testtoken", UserID: 10, Query: "Test SearchBlobs"}
 	data, err := json.Marshal(rbd)
@@ -58,7 +58,7 @@ func TestSearchHandler(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(data))
 	ts := makeFakeServer(searchResultBlob, searchResultCommit)
 	rec := httptest.NewRecorder()
-	SearchH(rec, req, &ESServer{address: ts.URL}, &GinServer{URL: ts.URL})
+	searchHandler(rec, req, &ESServer{address: ts.URL}, &GinServer{URL: ts.URL})
 	if rec.Code != http.StatusOK {
 		t.Fail()
 		return
@@ -69,7 +69,7 @@ func TestSearchHandler(t *testing.T) {
 	searchResultBlob = `{"took":1,"timed_out":false,"_shards":{"total":5,"successful":5,"skipped":0,"failed":0},"hits":{"total":0,"max_score":null,"hits":[]}}`
 	ts = makeFakeServer(searchResultBlob, searchResultCommit)
 	rec = httptest.NewRecorder()
-	SearchH(rec, req, &ESServer{address: ts.URL}, &GinServer{URL: ts.URL})
+	searchHandler(rec, req, &ESServer{address: ts.URL}, &GinServer{URL: ts.URL})
 	if rec.Code != http.StatusOK {
 		t.Fail()
 		return

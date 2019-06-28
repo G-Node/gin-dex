@@ -36,8 +36,8 @@ func IndexRepoWithPath(cfg *Configuration, path, ref string, repoid string, repo
 	return err
 }
 
-// ReIndexRepoWithPath walks a repository at a given path and resubmits it to the index
-func ReIndexRepoWithPath(cfg *Configuration, path, ref string, repoid string, reponame string) error {
+// reIndexRepoWithPath walks a repository at a given path and resubmits it to the index
+func reIndexRepoWithPath(cfg *Configuration, path, ref string, repoid string, reponame string) error {
 	log.Infof("Start indexing repository with path: %s", path)
 	rep, err := gig.OpenRepository(path)
 	if err != nil {
