@@ -68,6 +68,20 @@ func getParsedHttpCall(method, path string, body io.Reader, token, csrfT string,
 	return getParsedResponse(resp, obj)
 }
 
+func encodeResponse(obj interface{}, key []byte) ([]byte, error) {
+	data, err := json.Marshal(obj)
+	if err != nil {
+		log.Errorf("Failed to marshal response: %v", err)
+		return nil, err
+	}
+
+	encdata, err := libgin.EncryptString(key, string(data))
+	if err != nil {
+		log.Errorf("Failed to encrypt response: %v", err)
+	}
+	return []byte(encdata), err
+}
+
 // Encodes a given map into a struct.
 // Lazyly Uses json package instead of reflecting directly
 func map2struct(in interface{}, out interface{}) error {

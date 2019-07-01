@@ -44,6 +44,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
 	sreq := &libgin.SearchRequest{}
 	err := getParsedBody(r, cfg.Key, &sreq)
 	if err != nil {
+		log.Errorf("Could not read request body: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -80,7 +81,8 @@ func searchHandler(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
 	if err != nil {
 		log.Warnf("Could not search commits: %v", err)
 	}
-	data, err := json.Marshal(SearchResults{Blobs: rBlobs, Commits: rCommits})
+
+	data, err := encodeResponse(&SearchResults{Blobs: rBlobs, Commits: rCommits}, cfg.Key)
 	if err != nil {
 		log.Debugf("Could not marshal search results")
 		w.WriteHeader(http.StatusInternalServerError)
