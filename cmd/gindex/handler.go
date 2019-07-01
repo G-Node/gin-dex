@@ -18,7 +18,7 @@ import (
 // Handler for Index requests
 func indexHandler(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
 	rpath := cfg.RepositoryStore
-	rbd := IndexRequest{}
+	rbd := libgin.IndexRequest{}
 	err := getParsedBody(r, cfg.Key, &rbd)
 	log.Debugf("Got an indexing request: %+v", rbd)
 	if err != nil {
@@ -29,7 +29,8 @@ func indexHandler(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
 	if repo[len(repo)-4:] != ".git" {
 		repo = repo + ".git"
 	}
-	err = IndexRepoWithPath(cfg, fmt.Sprintf("%s/%s", rpath, repo), "master", rbd.RepoID, rbd.RepoPath)
+	repoidstr := fmt.Sprintf("%d", rbd.RepoID) // TODO: Make repoid int64 everywhere
+	err = IndexRepoWithPath(cfg, fmt.Sprintf("%s/%s", rpath, repo), "master", repoidstr, rbd.RepoPath)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
