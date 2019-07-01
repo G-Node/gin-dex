@@ -49,25 +49,28 @@ func searchHandler(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
 		return
 	}
 
-	log.Debugf("Repos to search in [search]: %+v", sreq.RepoIDs)
-	if sreq.SType == SEARCH_SUGGEST {
+	if sreq.SType == libgin.SEARCH_SUGGEST {
+		log.Debugf("Repos to search in [suggest]: %+v", sreq.RepoIDs)
 		suggestions, err := suggest(sreq, els)
 		if err != nil {
-			log.Warnf("Could not search blobs: %v", err)
+			log.Errorf("Failed to get suggestions: %v", err)
+			return
 		}
-		result := []Suggestion{}
-		for _, suf := range suggestions {
-			result = append(result, Suggestion{Title: suf})
-		}
-		suggestionsJ, err := json.Marshal(Suggestions{Items: result})
+
+		// encode and return suggestions as array (slice) of string
+		data, err := encodeResponse(suggestions, cfg.Key)
 		if err != nil {
+			log.Debugf("Could not marshal search suggest results")
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+		log.Infof("Returning %d suggestions", len(suggestions.Items))
 		w.WriteHeader(http.StatusOK)
-		w.Write(suggestionsJ)
+		w.Write(data)
 		return
 	}
+
+	log.Debugf("Repos to search in [search]: %+v", sreq.RepoIDs)
 	// Lets search now
 	rBlobs := []BlobSResult{}
 	log.Debug("Searching blobs")
@@ -93,20 +96,30 @@ func searchHandler(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
 	w.Write(data)
 }
 
-func suggestHandler(w http.ResponseWriter, r *http.Request, els *ESServer) {
+func suggestHandler(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
+	els := cfg.Elasticsearch
 	sreq := &libgin.SearchRequest{}
+	err := getParsedBody(r, cfg.Key, &sreq)
+	if err != nil {
+		log.Errorf("Could not read request body: %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	log.Debugf("Repos to search in [suggest]: %+v", sreq.RepoIDs)
 	// Lets search now
 	suggestions, err := suggest(sreq, els)
 	if err != nil {
-		log.Warnf("Could not search blobs: %v", err)
+		log.Errorf("Could not search blobs: %v", err)
 	}
 	suggestionsJ, err := json.Marshal(suggestions)
 	if err != nil {
+		log.Errorf("Failed to marshal suggestions: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+	log.Debugf("Returning suggestions: %+v", suggestionsJ)
 	w.Write(suggestionsJ)
 }
 
@@ -161,30 +174,39 @@ func reIndexHandler(w http.ResponseWriter, r *http.Request, cfg *Configuration) 
 	w.WriteHeader(http.StatusOK)
 }
 
-func suggest(sreq *libgin.SearchRequest, els *ESServer) ([]string, error) {
+func suggest(sreq *libgin.SearchRequest, els *ESServer) (*Suggestions, error) {
 	commS, err := els.Suggest(sreq)
 	defer commS.Body.Close()
 	if err != nil {
+		log.Errorf("Failed to get suggestions from Elasticsearch backend: %v", err)
 		return nil, err
 	}
 	data, err := ioutil.ReadAll(commS.Body)
 	if err != nil {
+		log.Errorf("Failed to read response body: %v", err)
 		return nil, err
 	}
 
 	re := regexp.MustCompile(`<em>(\w+)</em>`)
 	sdata := string(data)
 	matches := re.FindAllStringSubmatch(string(sdata), -1)
-	result := make([]string, len(matches))
-	for i, match := range matches {
-		result[i] = match[1]
+
+	words := make([]string, len(matches))
+	for idx, match := range matches {
+		words[idx] = match[1]
 	}
-	result = UniqueStr(result)
-	return result, nil
+	words = UniqueStr(words)
+
+	results := make([]Suggestion, len(words))
+	for idx, word := range words {
+		results[idx] = Suggestion{word}
+	}
+
+	log.Debugf("[suggest] Returning results: %+v", results)
+	return &Suggestions{Items: results}, nil
 }
 
-func searchCommits(sreq *libgin.SearchRequest, els *ESServer,
-	result interface{}) error {
+func searchCommits(sreq *libgin.SearchRequest, els *ESServer, result interface{}) error {
 	commS, err := els.SearchCommits(sreq)
 	if err != nil {
 		return err
@@ -197,8 +219,7 @@ func searchCommits(sreq *libgin.SearchRequest, els *ESServer,
 	return nil
 }
 
-func searchBlobs(sreq *libgin.SearchRequest, els *ESServer,
-	result interface{}) error {
+func searchBlobs(sreq *libgin.SearchRequest, els *ESServer, result interface{}) error {
 	blobS, err := els.SearchBlobs(sreq)
 	if err != nil {
 		return err

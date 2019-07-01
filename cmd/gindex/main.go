@@ -40,7 +40,7 @@ Options:
 		searchHandler(w, r, cfg)
 	})
 	http.HandleFunc("/suggest", func(w http.ResponseWriter, r *http.Request) {
-		suggestHandler(w, r, cfg.Elasticsearch)
+		suggestHandler(w, r, cfg)
 	})
 	http.HandleFunc("/reindex", func(w http.ResponseWriter, r *http.Request) {
 		reIndexHandler(w, r, cfg)

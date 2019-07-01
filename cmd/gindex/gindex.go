@@ -54,6 +54,5 @@ type Suggestions struct {
 }
 
 type Suggestion struct {
-	Title string
-	Url   string
+	Keyword string
 }
