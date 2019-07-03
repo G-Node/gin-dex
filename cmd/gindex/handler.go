@@ -10,33 +10,89 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"sync/atomic"
 
 	"github.com/G-Node/libgin/libgin"
 	log "github.com/sirupsen/logrus"
 )
 
-// Handler for Index requests
-func indexHandler(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
+// IndexTask holds the information required to satisfy a repository indexing
+// request.
+type IndexTask struct {
+	cfg  *Configuration
+	data *libgin.IndexRequest
+}
+
+// Run starts the indexing job.
+func (idxTask *IndexTask) Run() error {
+	cfg := idxTask.cfg
 	rpath := cfg.RepositoryStore
-	rbd := libgin.IndexRequest{}
-	err := getParsedBody(r, cfg.Key, &rbd)
-	log.Debugf("Got an indexing request: %+v", rbd)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	repo := strings.ToLower(rbd.RepoPath)
+	data := idxTask.data
+	repo := strings.ToLower(data.RepoPath)
 	if repo[len(repo)-4:] != ".git" {
 		repo = repo + ".git"
 	}
-	repoidstr := fmt.Sprintf("%d", rbd.RepoID) // TODO: Make repoid int64 everywhere
-	err = IndexRepoWithPath(cfg, fmt.Sprintf("%s/%s", rpath, repo), "master", repoidstr, rbd.RepoPath)
+	repoidstr := fmt.Sprintf("%d", data.RepoID) // TODO: Make repoid int64 everywhere
+	err := IndexRepoWithPath(cfg, fmt.Sprintf("%s/%s", rpath, repo), "master", repoidstr, data.RepoPath)
 	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// IndexQueue holds the job queue and the function for running the workers.
+type IndexQueue struct {
+	jobs     chan *IndexTask
+	nWorkers int
+}
+
+// NewIndexQueue initialises and returned an IndexQueue.
+func NewIndexQueue(maxw int) *IndexQueue {
+	return &IndexQueue{nWorkers: maxw, jobs: make(chan *IndexTask, 1000)}
+}
+
+// Start sets up the IndexQueue workers and prepares them to receive jobs.
+func (idxQueue *IndexQueue) Start() {
+	log.Debug("Starting indexer queue... ")
+	var received, finished, errors uint64
+	for wid := 0; wid < idxQueue.nWorkers; wid++ {
+		go func() {
+			for job := range idxQueue.jobs {
+				atomic.AddUint64(&received, 1)
+				err := job.Run()
+				if err != nil {
+					log.Errorf("Error running indexing job: %v", err)
+					atomic.AddUint64(&errors, 1)
+				}
+				atomic.AddUint64(&finished, 1)
+				log.Debugf("Finished %d/%d [%d errors] jobs\n", atomic.LoadUint64(&finished), atomic.LoadUint64(&received), atomic.LoadUint64(&errors))
+			}
+		}()
+	}
+	log.Debug("%d workers ready and waiting\n", idxQueue.nWorkers)
+}
+
+// AddTask creates an IndexTask and adds it to the worker queue.
+func (idxQueue *IndexQueue) AddTask(req *http.Request, cfg *Configuration) error {
+	// Read and decrypt request data
+	data := libgin.IndexRequest{}
+	err := getParsedBody(req, cfg.Key, &data) // error
+	if err != nil {
+		return err
+	}
+	idxTask := IndexTask{cfg: cfg, data: &data}
+	idxQueue.jobs <- &idxTask
+	return nil
+}
+
+// Handler for indexing requests.  Adds new indexing requests to the IndexQueue and logs any errors.
+func indexHandler(w http.ResponseWriter, r *http.Request, cfg *Configuration, idxQueue *IndexQueue) {
+	err := idxQueue.AddTask(r, cfg)
+	if err != nil {
+		log.Errorf("Error while preparing indexing task: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
 	w.WriteHeader(http.StatusOK)
-	return
 }
 
 // Handler for SearchBlobs requests

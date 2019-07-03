@@ -32,9 +32,13 @@ Options:
 
 	cfg := loadconfig()
 
+	// Set up the indexing workers
+	indexingQueue := NewIndexQueue(20)
+	indexingQueue.Start()
+
 	log.Debug("Registering routes")
 	http.HandleFunc("/index", func(w http.ResponseWriter, r *http.Request) {
-		indexHandler(w, r, cfg)
+		indexHandler(w, r, cfg, indexingQueue)
 	})
 	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
 		searchHandler(w, r, cfg)
