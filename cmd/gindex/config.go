@@ -60,11 +60,11 @@ func loadconfig() *Configuration {
 	}
 	cfg.Timeout = timeout
 
-	portstr := libgin.ReadConfDefault("port", "8099")
+	portstr := libgin.ReadConfDefault("port", "10443")
 	port, err := strconv.ParseUint(portstr, 10, 16)
 	if err != nil {
 		log.Printf("Error while parsing port variable: %v", err)
-		port = 8099
+		port = 10443
 		log.Printf("Using default: %d", port)
 	}
 
