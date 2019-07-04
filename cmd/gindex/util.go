@@ -78,6 +78,7 @@ func encodeResponse(obj interface{}, key []byte) ([]byte, error) {
 	encdata, err := libgin.EncryptString(key, string(data))
 	if err != nil {
 		log.Errorf("Failed to encrypt response: %v", err)
+		return nil, err
 	}
 	return []byte(encdata), err
 }
