@@ -88,8 +88,6 @@ func (bl *IndexBlob) AddToIndex(cfg *Configuration, id gig.SHA1) error {
 		return nil
 	}
 
-	repopath := cfg.RepositoryStore
-
 	switch ftype {
 	case ANNEX:
 		APFileC, err := ioutil.ReadAll(blobBuffer)
@@ -98,18 +96,18 @@ func (bl *IndexBlob) AddToIndex(cfg *Configuration, id gig.SHA1) error {
 			log.Errorf("Could not open annex pointer file: %v", err)
 			return err
 		}
-		Afile, err := gannex.NewAFile(repopath, "", "", APFileC)
+		annexfile, err := gannex.NewAFile(cfg.RepositoryStore, "", "", APFileC)
 		if err != nil {
 			log.Errorf("Could not get annex file: %v", err)
 			return err
 		}
-		fp, err := Afile.Open()
+		fp, err := annexfile.Open()
 		if err != nil {
 			log.Errorf("Could not open annex file: %v", err)
 			return err
 		}
 		defer fp.Close()
-		bl.Blob = gig.MakeAnnexBlob(fp, Afile.Info.Size())
+		bl.Blob = gig.MakeAnnexBlob(fp, annexfile.Info.Size())
 		return bl.AddToIndex(cfg, id)
 
 	case TEXT:
