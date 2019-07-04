@@ -76,7 +76,7 @@ func (idxQueue *IndexQueue) Start() {
 func (idxQueue *IndexQueue) AddTask(req *http.Request, cfg *Configuration) error {
 	// Read and decrypt request data
 	data := libgin.IndexRequest{}
-	err := getParsedBody(req, cfg.Key, &data) // error
+	err := getParsedBody(req, cfg.Key, &data)
 	if err != nil {
 		return err
 	}
