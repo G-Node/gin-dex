@@ -91,6 +91,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request, cfg *Configuration, id
 	if err != nil {
 		log.Errorf("Error while preparing indexing task: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	w.WriteHeader(http.StatusOK)
 }
