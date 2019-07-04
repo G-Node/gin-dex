@@ -69,7 +69,7 @@ func (idxQueue *IndexQueue) Start() {
 			}
 		}()
 	}
-	log.Debug("%d workers ready and waiting\n", idxQueue.nWorkers)
+	log.Debugf("%d workers ready and waiting\n", idxQueue.nWorkers)
 }
 
 // AddTask creates an IndexTask and adds it to the worker queue.
