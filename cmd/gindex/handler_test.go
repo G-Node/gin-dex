@@ -11,7 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func TestindexHandlerandler(t *testing.T) {
+func TestIndexHandler(t *testing.T) {
 	log.SetLevel(log.ErrorLevel)
 	Setting.Timeout = 10
 	rbd := IndexRequest{UserID: 10, RepoPath: "repo2.git",
@@ -44,7 +44,7 @@ func TestindexHandlerandler(t *testing.T) {
 	t.Log("[OK] indexing")
 }
 
-func TestsearchHandlerandler(t *testing.T) {
+func TestSearchHandler(t *testing.T) {
 	log.SetLevel(log.ErrorLevel)
 	rbd := SearchRequest{Token: "testtoken", UserID: 10, Query: "Test SearchBlobs"}
 	data, err := json.Marshal(rbd)
