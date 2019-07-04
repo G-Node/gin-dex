@@ -1,7 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/G-Node/gig"
+	"github.com/G-Node/libgin/libgin"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -37,7 +41,10 @@ func IndexRepoWithPath(cfg *Configuration, path, ref string, repoid string, repo
 }
 
 // reIndexRepoWithPath walks a repository at a given path and resubmits it to the index
-func reIndexRepoWithPath(cfg *Configuration, path, ref string, repoid string, reponame string) error {
+func reIndexRepoWithPath(cfg *Configuration, ref string, idxreq *libgin.IndexRequest) error {
+	repoid := fmt.Sprintf("%d", idxreq.RepoID)
+	reponame := idxreq.RepoPath
+	path := fmt.Sprintf("%s/%s", cfg.RepositoryStore, strings.ToLower(reponame)+".git")
 	log.Infof("Start indexing repository with path: %s", path)
 	rep, err := gig.OpenRepository(path)
 	if err != nil {

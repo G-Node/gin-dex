@@ -182,14 +182,14 @@ func suggestHandler(w http.ResponseWriter, r *http.Request, cfg *Configuration) 
 
 // Handler for Index requests
 func reIndexRepo(w http.ResponseWriter, r *http.Request, cfg *Configuration) {
-	rbd := IndexRequest{}
+	rbd := libgin.IndexRequest{}
 	err := getParsedBody(r, cfg.Key, &rbd)
 	log.Debugf("Got an indexing request: %+v", rbd)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err = reIndexRepoWithPath(cfg, fmt.Sprintf("%s/%s", cfg.RepositoryStore, strings.ToLower(rbd.RepoPath)+".git"), "master", rbd.RepoID, rbd.RepoPath)
+	err = reIndexRepoWithPath(cfg, "master", &rbd)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
