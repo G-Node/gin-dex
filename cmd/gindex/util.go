@@ -39,7 +39,7 @@ func getParsedBody(r *http.Request, key []byte, obj interface{}) error {
 
 	err = json.Unmarshal([]byte(reqdata), obj)
 	if err != nil {
-		log.Debugf("Could not unmarshal request [%s]: %v", string(reqdata), err)
+		log.Errorf("Could not unmarshal request [%s]: %v", string(reqdata), err)
 		return err
 	}
 	return nil
