@@ -143,6 +143,7 @@ func GetBlobPath(blid, cid, path string) (string, error) {
 	cmd := git.NewCommand("ls-tree", "-r", cid)
 	res, err := cmd.RunInDirBytes(path)
 	if err != nil {
+		log.Errorf("GetBlobPath: Could not find path for blob: %s\ngit ls-tree error: %+v", blid, err)
 		return "", err
 	}
 	pattern := fmt.Sprintf("%s\\s+(.+)", blid)
