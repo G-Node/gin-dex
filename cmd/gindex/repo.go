@@ -97,9 +97,15 @@ func indexCommit(cfg *Configuration, commit *gig.Commit, repoid string, commitid
 		}
 		if !hasBlob {
 			bpath, _ := GetBlobPath(blid.String(), commitid.String(), path)
-			err = NewBlobFromGig(blob, repoid, blid, commitid.String(), bpath, reponame).AddToIndexTimeout(cfg, blid)
-			if err != nil {
-				log.Debugf("Indexing blob failed: %v", err)
+			if cfg.ExcludePattern.glob != nil && bpath != "" && cfg.ExcludePattern.glob.Match(bpath) {
+				//do not index file that match exclusion pattern
+				log.Debugf("NOT indexing blob : %s", bpath)
+			} else {
+				log.Debugf("Indexing blob : %s ", bpath)
+				err = NewBlobFromGig(blob, repoid, blid, commitid.String(), bpath, reponame).AddToIndexTimeout(cfg, blid)
+				if err != nil {
+					log.Debugf("Indexing blob failed: %v", err)
+				}
 			}
 		} else {
 			log.Debugf("Blob there :%s", blid)

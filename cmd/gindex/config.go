@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/G-Node/libgin/libgin"
+	"github.com/gobwas/glob"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -25,6 +26,12 @@ type Configuration struct {
 	Timeout int64
 	// Elasticsearch server instance for querying index
 	Elasticsearch *ESServer
+
+	//glob pattern of files to exclude from indexing
+	ExcludePattern struct {
+		pattern string
+		glob    glob.Glob
+	}
 }
 
 func loadconfig() *Configuration {
@@ -79,6 +86,18 @@ func loadconfig() *Configuration {
 	}
 
 	cfg.Elasticsearch = els
+
+	cfg.ExcludePattern.pattern = libgin.ReadConf("exclude_from_index")
+	if cfg.ExcludePattern.pattern != "" {
+		g, err := glob.Compile(cfg.ExcludePattern.pattern)
+		if err != nil {
+			log.Errorf("File indexing exclusion pattern could not be compiled : \"%s\"", cfg.ExcludePattern)
+			log.Warnf("All later use of exclusion pattern will be ignored!")
+		} else {
+			log.Infof("File indexing exclusion pattern: %v", cfg.ExcludePattern.pattern)
+			cfg.ExcludePattern.glob = g
+		}
+	}
 
 	return &cfg
 }

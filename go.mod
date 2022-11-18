@@ -16,6 +16,7 @@ require (
 	github.com/go-macaron/cache v0.0.0-20151013081102-561735312776 // indirect
 	github.com/go-macaron/inject v0.0.0-20160627170012-d8a0b8677191 // indirect
 	github.com/go-macaron/session v0.0.0-20190131233854-0a0a789bf193 // indirect
+	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gogits/go-gogs-client v0.0.0-20190616193657-5a05380e4bc2
 	github.com/gogs/chardet v0.0.0-20150115103509-2404f7772561 // indirect
 	github.com/gogs/go-libravatar v0.0.0-20161120025154-cd1abbd55d09 // indirect
